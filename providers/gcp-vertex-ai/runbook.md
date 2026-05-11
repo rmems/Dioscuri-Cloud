@@ -3,8 +3,25 @@
 ## Purpose
 Managed ML and Vertex AI practice for reproducible SAAQ cloud workflows.
 
-## Local environment note
-Local workstation is already configured to `gcloud` (re-validate account/project before each run).
+## Prerequisites
+- Ensure `gcloud` CLI is installed and authenticated
+- Verify correct GCP project is selected
+- Confirm billing is enabled for the project
+
+## Quick verification checklist
+```bash
+# Check gcloud installation
+gcloud version
+
+# Verify authentication
+gcloud auth list
+
+# Confirm project selection
+gcloud config get-value project
+
+# List available GPU quotas (if needed)
+gcloud compute regions list
+```
 
 ## Intended services
 - Cloud Storage

@@ -34,8 +34,8 @@ Expected artifact layout for both cloud and local smoke runs:
   "heartbeat_enabled": false,
   "start_time_utc": "TBD",
   "end_time_utc": "TBD",
-  "runtime_seconds": "TBD",
-  "estimated_cost_usd": "TBD",
+  "runtime_seconds": null,
+  "estimated_cost_usd": null,
   "artifacts": [
     "artifacts/index.csv",
     "logs/",

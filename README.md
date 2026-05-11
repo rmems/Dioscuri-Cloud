@@ -43,9 +43,9 @@ Every run record must include:
 - provider + region
 - instance type / GPU type
 - `git_sha`
-- SAAQ version
-- runtime
-- estimated cost
+- `saaq_version`
+- `runtime_seconds`
+- `estimated_cost_usd`
 - artifacts produced
 - teardown confirmation
 

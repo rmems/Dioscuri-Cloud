@@ -8,14 +8,15 @@ This directory stores experiment reports by dated folder and provider context. R
 - `model_slug`
 - `provider`
 - `region`
-- `GPU/instance`
-- `SAAQ version`
+- `gpu_type`
+- `instance_type`
+- `saaq_version`
 - `telemetry_source`
-- `heartbeat mode`
-- `runtime`
-- `estimated cost`
+- `heartbeat_enabled`
+- `runtime_seconds`
+- `estimated_cost_usd`
 - `artifacts`
-- `teardown status`
+- `teardown_confirmed`
 - `result summary`
 - `failure notes`
 

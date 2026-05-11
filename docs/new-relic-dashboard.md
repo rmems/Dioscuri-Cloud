@@ -12,7 +12,6 @@ Planned dashboards for SAAQ cloud lab observability:
 - `git_sha`
 - `model_slug`
 - `provider`
-- `cloud_provider`
 - `region`
 - `gpu_type`
 - `saaq_version`

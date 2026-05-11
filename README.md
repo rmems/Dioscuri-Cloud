@@ -1,59 +1,67 @@
 # saaq-cloud-ml-lab
 
-Cloud ML infrastructure lab for SAAQ experiments, MoE model smoke tests, cost tracking, and provider-specific runbooks.
+SAAQ Cloud ML Lab is the cloud/MLOps companion repository for SAAQ experimentation.  
+The core SAAQ implementation (Rust/CUDA and core runtime work) lives in **`rmems/corinth-canal`**.
 
-This repo is not the core SAAQ implementation. The core implementation lives in `rmems/corinth-canal`. This repo is the cloud operations layer used to document reproducible experiments across free/student cloud credits.
+This repository focuses on:
+- cloud GPU smoke-test runbooks,
+- cloud credit and cost tracking,
+- Terraform/HashiCorp control-plane notes,
+- provider operations guides,
+- reproducible experiment records,
+- New Relic dashboard planning,
+- artifact/report schema documentation.
 
-## Goals
+## Scope and intent
 
-- Run small, controlled SAAQ smoke tests on cloud GPUs.
-- Keep cloud spend visible through a cost ledger.
-- Document provider setup and teardown steps before running expensive jobs.
-- Store cloud/MLOps runbooks for DigitalOcean, AWS, Azure, GCP/Vertex AI, Vultr, and HashiCorp/Terraform.
-- Produce durable portfolio artifacts: runbooks, experiment reports, cost notes, and reproducibility logs.
+This is a **cost-controlled lab** for reproducibility and MLOps practice. It is not a production deployment repo and not a full-training roadmap.
 
-## Non-goals
+### What this repo tracks
+- Provider runbooks (`providers/`)
+- Cloud credit inventory and run-level cost ledger (`cost-ledger.md`)
+- Terraform/HCP guidance and planned module layout (`terraform/`)
+- Experiment reports and templates (`experiments/`, `docs/run-record-template.md`)
+- Model lineup planning and verification status (`docs/model-lineup.md`)
+- New Relic dashboard plans and safe telemetry fields (`docs/new-relic-dashboard.md`)
+- Artifact schema and manifest expectations (`docs/artifact-schema.md`)
 
-- No full Grok-1 training.
-- No full-model fine-tuning unless explicitly planned in a separate issue.
-- No secrets, API keys, DSNs, local checkpoint paths, or model weights committed.
-- No long-running GPU jobs without a cost estimate and teardown plan.
+## Provider strategy
+
+| Provider | Role in this lab |
+|---|---|
+| DigitalOcean | First practical GPU smoke-test target |
+| AWS | S3/ECR/SageMaker/IAM MLOps practice and certification alignment |
+| Azure | Azure ML/Blob/Key Vault practice and certification alignment |
+| GCP / Vertex AI | Managed ML and AI platform practice |
+| Vultr | Opportunistic GPU tests only, due to potentially weak availability |
+| HashiCorp | Terraform/HCP control plane, not model compute |
+
+## Cloud run discipline
+
+Every run record must include:
+- `model_slug`
+- provider + region
+- instance type / GPU type
+- `git_sha`
+- SAAQ version
+- runtime
+- estimated cost
+- artifacts produced
+- teardown confirmation
+
+Also required:
+- no secrets committed,
+- no claims of completed cloud runs without evidence,
+- no long-running GPU jobs without an estimate and teardown plan.
 
 ## Repository layout
 
 ```text
 providers/                 Provider-specific runbooks
-terraform/                 Terraform/HCP notes and module layout
-experiments/               Experiment reports and run records
-docs/                      Cross-provider documentation and schemas
-cost-ledger.md             Running estimate of cloud credit usage
+terraform/                 Terraform/HCP notes and planned modules
+experiments/               Experiment run reports (no fabricated results)
+docs/                      Cross-provider runbook/schema/dashboard docs
+cost-ledger.md             Credit inventory + run-level cost ledger
 ```
 
-## Provider strategy
-
-| Provider | Primary role |
-|---|---|
-| DigitalOcean | First practical cloud GPU smoke-test target |
-| AWS | SageMaker/S3/ECR/IAM MLOps practice and certification alignment |
-| Azure | Azure ML/Blob/Key Vault practice and certification alignment |
-| GCP / Vertex AI | Managed ML and AI platform practice |
-| Vultr | Opportunistic GPU tests only, due to availability uncertainty |
-| HashiCorp | Terraform/HCP control plane, not model compute |
-
-## Run discipline
-
-Every cloud run should include:
-
-- Git commit SHA
-- model slug
-- SAAQ version
-- telemetry source
-- heartbeat mode
-- provider and region
-- GPU or instance type
-- start/end time
-- estimated cost
-- artifacts produced
-- teardown confirmation
-
-Start with documentation and smoke tests. Scale only after local and cloud baselines are reproducible.
+See `docs/cloud-gpu-runbook.md` for the generalized run workflow.

@@ -3,10 +3,11 @@
 *.pem
 *.key
 *.tfvars
+*.tfvars.json
 .terraform/
 terraform.tfstate
 terraform.tfstate.*
-artifacts/
+artifacts/*
 outputs/
 checkpoints/
 models/

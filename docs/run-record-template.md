@@ -10,7 +10,13 @@ TBD (UTC)
 - repo: `rmems/saaq-cloud-ml-lab`
 - git SHA: `TBD`
 
+## Run ID
+TBD
+
 ## Provider
+TBD
+
+## Region
 TBD
 
 ## Model
@@ -19,11 +25,14 @@ TBD
 ## Hardware
 TBD (instance + GPU)
 
-## SAAQ config
+## SAAQ version
 TBD
 
 ## Telemetry source
 TBD
+
+## Heartbeat mode
+false
 
 ## Commands run
 ```bash
@@ -31,11 +40,11 @@ TBD
 TBD
 ```
 
-## Runtime
-TBD
+## Runtime (seconds)
+null
 
-## Cost
-TBD (estimated and/or observed)
+## Cost (USD)
+null
 
 ## Artifacts
 - `run_manifest.json`

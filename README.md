@@ -1,4 +1,4 @@
-# saaq-cloud-ml-lab
+# Dioscuri-Cloud
 
 Cloud ML infrastructure lab for SAAQ experiments, MoE model smoke tests, cost tracking, and provider-specific runbooks.
 

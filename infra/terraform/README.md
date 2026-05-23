@@ -13,6 +13,8 @@ The goal is to establish the shape of the infrastructure code so future provider
 
 ```text
 infra/terraform/
+  remote_state_override.tf.example   Example HCP Terraform remote-state config
+
   modules/
     onboarding_baseline/      Minimal provider-neutral module for shared metadata
 
@@ -25,12 +27,50 @@ infra/terraform/
 - Terraform is the infrastructure control layer.
 - Provider-specific work will be added later for IBM, GCP, DigitalOcean, AWS, and Azure.
 - Secrets and credentials must stay out of git.
-- This scaffold is safe to validate with `terraform init -backend=false`.
+- This scaffold is safe to validate locally without committed backend credentials.
+
+## Remote State
+
+Run environments should use HCP Terraform remote state rather than local state files.
+
+Recommended model:
+- one HCP Terraform workspace per run environment
+- one state file per environment folder
+- no shared workspace spanning unrelated environments
+
+Current environment mapping:
+- `infra/terraform/environments/dev` -> `dioscuri-cloud-run-dev`
+
+Future environments should follow the same shape, for example:
+- `infra/terraform/environments/staging` -> `dioscuri-cloud-run-staging`
+- `infra/terraform/environments/prod` -> `dioscuri-cloud-run-prod`
+
+The tracked file `remote_state_override.tf.example` defines the intended backend shape for run environments using HCP Terraform in organization `Limen-Neural`.
+
+### Safe Local Usage
+
+Do not rename the example file in git.
+
+To enable remote state locally:
+- copy `infra/terraform/remote_state_override.tf.example` to `infra/terraform/remote_state_override.tf`
+- keep the copied file untracked (it is already ignored by the repo-wide `*_override.tf` rule)
+- run `terraform login` or provide an HCP token via environment variables
+
+This keeps backend credentials and local operator-specific choices out of the repository.
+
+### Credential and State Safety
+
+- Do not commit HCP tokens, provider credentials, or `.terraform/` artifacts.
+- Do not commit local state files.
+- Treat HCP Terraform as the canonical state location for run environments.
+- If a workspace is renamed, migrate state intentionally rather than creating a second workspace accidentally.
+- Do not point two run environments at the same workspace/state.
 
 ## Validation
 
 ```bash
 terraform -chdir=infra/terraform fmt -recursive
+terraform -chdir=infra/terraform init
 terraform -chdir=infra/terraform/environments/dev init -backend=false
 terraform -chdir=infra/terraform/environments/dev validate
 ```

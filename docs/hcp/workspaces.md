@@ -11,6 +11,8 @@ HCP Terraform is the control plane for infrastructure state, policy, and drift d
 - Support GitHub VCS integration later without renaming everything.
 
 ## Organization Layout
+HCP Terraform organization: `Limen-Neural`.
+
 Recommended structure inside a single HCP Terraform org:
 - Folder/Project grouping (in HCP UI):
   - `dioscuri-cloud/core` for shared primitives and control-plane wiring.

@@ -20,6 +20,7 @@ infra/terraform/
 
   environments/
     dev/                      Small onboarding environment composition
+      remote_state_override.tf  Local-only copied backend override (untracked)
 ```
 
 ## Design Notes
@@ -46,6 +47,7 @@ Future environments should follow the same shape, for example:
 - `infra/terraform/environments/prod` -> `dioscuri-cloud-run-prod`
 
 The tracked file `remote_state_override.tf.example` defines the intended backend shape for run environments using HCP Terraform in organization `Limen-Neural`.
+Copy its contents into the specific environment root module that will be initialized.
 
 ### Safe Local Usage
 
@@ -70,7 +72,11 @@ This keeps backend credentials and local operator-specific choices out of the re
 
 ```bash
 terraform -chdir=infra/terraform fmt -recursive
+
+# Sanity-check the scaffold root only (required_version / backend-shape only)
 terraform -chdir=infra/terraform init
+
+# Validate the actual run environment module
 terraform -chdir=infra/terraform/environments/dev init -backend=false
 terraform -chdir=infra/terraform/environments/dev validate
 ```

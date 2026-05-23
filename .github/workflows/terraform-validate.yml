@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "terraform/**"
+      - "infra/terraform/**"
       - ".github/workflows/terraform-validate.yml"
   push:
     branches:
       - main
     paths:
       - "terraform/**"
+      - "infra/terraform/**"
       - ".github/workflows/terraform-validate.yml"
 
 permissions:
@@ -30,7 +32,9 @@ jobs:
           terraform_wrapper: false
 
       - name: terraform fmt -check -recursive
-        run: terraform fmt -check -recursive terraform
+        run: |
+          terraform fmt -check -recursive terraform
+          terraform fmt -check -recursive infra/terraform
 
   validate:
     name: Terraform validate (safe subset)
@@ -65,6 +69,26 @@ jobs:
             echo "ERROR: No Terraform modules found under terraform/modules/" >&2
             exit 1
           fi
+
+          validated_infra=0
+          for d in infra/terraform/modules/*; do
+            if [ -d "$d" ]; then
+              echo "Validating infra module: $d"
+              terraform -chdir="$d" init -backend=false
+              terraform -chdir="$d" validate
+              validated_infra=$((validated_infra + 1))
+            fi
+          done
+
+          if [ "$validated_infra" -eq 0 ]; then
+            echo "ERROR: No Terraform modules found under infra/terraform/modules/" >&2
+            exit 1
+          fi
+
+      - name: Validate infra onboarding environment
+        run: |
+          terraform -chdir=infra/terraform/environments/dev init -backend=false
+          terraform -chdir=infra/terraform/environments/dev validate
 
       - name: Env validation skipped (provider wiring deferred)
         run: |

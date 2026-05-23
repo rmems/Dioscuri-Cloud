@@ -26,6 +26,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
+          terraform_version: "1.10.5"
           terraform_wrapper: false
 
       - name: terraform fmt -check -recursive
@@ -41,6 +42,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
+          terraform_version: "1.10.5"
           terraform_wrapper: false
 
       - name: Validate modules (no providers required)

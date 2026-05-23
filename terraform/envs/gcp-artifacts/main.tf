@@ -2,7 +2,8 @@ terraform {
   required_version = ">= 1.3.0"
 }
 
-// TODO(gcp): wire providers and implement real resources.
+// Provider configuration and resource implementations are intentionally deferred.
+// This environment composes stable module interfaces and will gain provider wiring in a follow-up issue.
 
 module "artifacts" {
   source = "../../modules/artifact_bucket"

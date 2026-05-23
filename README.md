@@ -49,7 +49,6 @@ Every cloud run should include:
 - model slug
 - SAAQ version
 - telemetry source
-- heartbeat mode
 - provider and region
 - GPU or instance type
 - start/end time

@@ -22,7 +22,7 @@ Additional source of truth:
 | `provider` | string | Cloud provider used for the run, e.g. `aws`, `azure`, `gcp`, `ibm`, `do`, `vultr`. |
 | `region` | string | Cloud region or location. |
 | `instance_type` | string | Compute instance/machine type. Use `n/a` for no-compute storage-only runs. |
-| `gpu_type` | string or null | GPU type if used; `null` or `"none"` for CPU/no-GPU runs. |
+| `gpu_type` | string or null | GPU type if used; `null` for CPU/no-GPU runs. |
 | `start_time_utc` | string | RFC 3339 UTC timestamp for run start. |
 | `end_time_utc` | string | RFC 3339 UTC timestamp for run end. |
 | `estimated_cost_usd` | number | Estimated total run cost in USD. |

@@ -48,14 +48,21 @@ jobs:
         run: |
           set -euo pipefail
 
+          validated=0
           # Module skeletons should validate without provider plugins.
           for d in terraform/modules/*; do
             if [ -d "$d" ]; then
               echo "Validating module: $d"
               terraform -chdir="$d" init -backend=false
               terraform -chdir="$d" validate
+              validated=$((validated + 1))
             fi
           done
+
+          if [ "$validated" -eq 0 ]; then
+            echo "ERROR: No Terraform modules found under terraform/modules/" >&2
+            exit 1
+          fi
 
       - name: Env validation skipped (provider wiring deferred)
         run: |

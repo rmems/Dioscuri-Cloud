@@ -3,7 +3,7 @@ terraform {
     organization = "Limen-Neural"
 
     workspaces {
-      name = "dioscuri-cloud-run-dev"
+      name = "REPLACE_WITH_DIOSCURI_CLOUD_RUN_WORKSPACE"
     }
   }
 }

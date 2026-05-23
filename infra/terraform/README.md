@@ -47,6 +47,7 @@ Future environments should follow the same shape, for example:
 - `infra/terraform/environments/prod` -> `dioscuri-cloud-run-prod`
 
 The tracked file `remote_state_override.tf.example` defines the intended backend shape for run environments using HCP Terraform in organization `Limen-Neural`.
+Its workspace name is intentionally a placeholder so operators must replace it with the exact environment workspace instead of accidentally reusing `dev` state.
 Copy its contents into the specific environment root module that will be initialized.
 
 ### Safe Local Usage
@@ -55,6 +56,7 @@ Do not rename the example file in git.
 
 To enable remote state locally:
 - copy infra/terraform/remote_state_override.tf.example to the target environment directory (e.g., infra/terraform/environments/dev/remote_state_override.tf)
+- replace `REPLACE_WITH_DIOSCURI_CLOUD_RUN_WORKSPACE` with the exact workspace for that environment (e.g. `dioscuri-cloud-run-dev`)
 - keep the copied file untracked (it is already ignored by the repo-wide `*_override.tf` rule)
 - run `terraform login` or provide an HCP token via environment variables
 

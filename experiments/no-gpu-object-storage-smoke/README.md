@@ -59,7 +59,7 @@ export RUN_DATE="$(date -u +%F)"
 export RUN_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
 export S3_BUCKET="<your-bucket>"
 
-aws s3 cp /tmp/dioscuri-cloud-smoke "s3://$S3_BUCKET/dioscuri-cloud/smoke-tests/$PROVIDER/$RUN_DATE/$RUN_ID/" --recursive
+aws s3 cp /tmp/dioscuri-cloud-smoke/ "s3://$S3_BUCKET/dioscuri-cloud/smoke-tests/$PROVIDER/$RUN_DATE/$RUN_ID/" --recursive
 ```
 
 ### GCP (GCS)

@@ -42,6 +42,7 @@ Not allowed:
   - CLI output snippet confirming deletion, or
   - Audit log link, or
   - Screenshot link.
+- If teardown has not yet occurred when the ledger row is first added (e.g. the infra PR merges before the experiment runs), use `TBD` and update the cell in a follow-up PR or commit once teardown is complete.
 
 ## Cost Reconciliation
 - Record estimated cost at time of creation.

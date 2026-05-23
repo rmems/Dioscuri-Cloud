@@ -119,6 +119,7 @@ GPU Smoke-Test Readiness
 - GitHub issue: <owner/repo#number>
 - Linear issue: <KEY or URL>
 - Commit SHA: <sha>
+- Date: <YYYY-MM-DD>
 
 Readiness:
 - [ ] Local baseline completed

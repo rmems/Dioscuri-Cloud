@@ -12,3 +12,5 @@ Notes:
 | DigitalOcean | Student credits | 205 | TBD | Small CPU instances, managed DB trials, reproducible deployments | Default spend cap: $20/experiment; teardown within 24h of completion | Prefer smallest droplet that meets requirements |
 | AWS | Student credits | 200 | TBD | Short-lived GPU/CPU experiments, storage for datasets (minimal) | Default spend cap: $25/experiment; no unmanaged long-lived resources | Use budgets/alerts where available |
 | Azure | Student credits | 100 | TBD | Short-lived experiments, minimal infra validation | Default spend cap: $15/experiment; teardown same day when possible | Use resource groups per experiment |
+| Vultr | Account credit | 250 | 2026-05-28 | Opportunistic GPU tests and short-lived compute experiments | Default spend cap: $25/experiment; teardown same day unless documented | Credit screenshot in issue notes; update if Vultr changes expiration |
+| GCP | Google AI Pro monthly credit | 10 / month | Monthly | Light experiments only (small inference, minimal storage) | Default spend cap: $10/month; track each run in ledger | Recurs monthly while subscription active |

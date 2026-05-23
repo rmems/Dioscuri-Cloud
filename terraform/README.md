@@ -44,7 +44,8 @@ Terraform files should be kept `terraform fmt` clean.
 
 This repo runs basic Terraform checks in GitHub Actions for pull requests:
 - `terraform fmt -check -recursive`
-- `terraform validate` for module skeletons that do not require provider credentials
+- `terraform init -backend=false` + `terraform validate` for module skeletons that do not require provider credentials
+- Environment validation (`terraform/envs/*`) is intentionally skipped until provider wiring and auth (OIDC/credentials) exist
 
 These checks are intentionally limited and do not perform remote planning/applying.
 HCP Terraform (later) will run remote plans/applies with configured workspaces, providers, and credentials/OIDC.

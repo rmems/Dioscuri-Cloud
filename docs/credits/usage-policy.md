@@ -25,7 +25,7 @@ Not allowed:
 
 ## Budget Guardrails
 - Set an explicit estimated cost in the Linear issue before creating resources.
-- Default per-experiment cap is the provider-specific cap listed in `docs/credits/inventory.md`. For providers not listed there, the default cap is $10 per experiment.
+- Default spend cap is the provider-specific cap listed in `docs/credits/inventory.md` (cap period varies by provider—per-experiment for most, per-month aggregate for GCP). For providers not listed there, the default cap is $10 per experiment.
 - If an experiment needs more than the default cap, document the reason and approval in the Linear issue.
 
 ## Resource Hygiene
@@ -36,7 +36,7 @@ Not allowed:
   - `owner`, `linear`, `pr`, `teardown_by`.
 
 ## Teardown Requirements
-- Teardown must be planned up-front and executed promptly after the experiment completes. For providers listed in `docs/credits/inventory.md`, follow the provider-specific teardown deadline in the Budget caps / guardrails column (e.g., DigitalOcean within 24 h of completion, Azure same day when possible).
+- Teardown must be planned up-front and executed promptly after the experiment completes. For providers with explicit teardown deadlines in the Budget caps / guardrails column of `docs/credits/inventory.md`, follow those deadlines (e.g., DigitalOcean within 24 h of completion, Azure same day when possible).
 - Teardown evidence is required in `cost-ledger.md`:
   - Provider console link showing resource deleted, or
   - CLI output snippet confirming deletion, or

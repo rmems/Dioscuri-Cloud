@@ -108,7 +108,7 @@ At minimum know in advance:
 ## Execution
 
 1. Launch the smallest suitable DigitalOcean GPU droplet.
-2. Record the exact region, SKU, and start timestamp.
+2. Record the exact region, SKU, and start_time_utc.
 3. Run the minimal smoke path only:
    - checkpoint load, or
    - one-shot inference, or

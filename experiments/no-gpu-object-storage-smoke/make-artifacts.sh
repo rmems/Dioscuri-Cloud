@@ -15,9 +15,10 @@ run_time_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 sha256_of() {
   if command -v sha256sum >/dev/null 2>&1; then
     sha256sum "$1" | awk '{print $1}'
-  else
-    shasum -a 256 "$1" | awk '{print $1}'
+    return
   fi
+
+  shasum -a 256 "$1" | awk '{print $1}'
 }
 
 cat >"$out_dir/hello-dioscuri-cloud.txt" <<EOF

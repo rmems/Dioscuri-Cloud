@@ -35,7 +35,7 @@ If anything is preserved, document:
 1. Compute
 - All instances destroyed (not merely stopped—stopped VMs still incur disk/IP charges)
 - GPUs released (no running GPU nodes)
-- Autoscaling groups/node pools scaled to zero or deleted
+- Autoscaling groups/node pools/K8s clusters scaled to zero or deleted
 - Spot/preemptible instances terminated
 
 2. Storage

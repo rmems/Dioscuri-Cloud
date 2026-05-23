@@ -2,7 +2,7 @@
 
 Every cloud run/experiment in this repo must include teardown evidence.
 
-The goal is to prove that billable resources were stopped/destroyed, or that anything intentionally retained is explicitly documented with a cost note.
+The goal is to prove that billable resources were destroyed, or that anything intentionally retained is explicitly documented with a cost note.
 
 This checklist is provider-neutral and applies to AWS/Azure/GCP/DigitalOcean/IBM/Vultr and any future providers.
 
@@ -33,7 +33,7 @@ If anything is preserved, document:
 ## Provider-Neutral Checks
 
 1. Compute
-- All instances stopped or destroyed
+- All instances destroyed (not merely stopped—stopped VMs still incur disk/IP charges)
 - GPUs released (no running GPU nodes)
 - Autoscaling groups/node pools scaled to zero or deleted
 - Spot/preemptible instances terminated
@@ -79,8 +79,8 @@ Run:
 - Linear: <KEY or URL>
 - PR: <URL>
 
-Destroyed/Stopped:
-- Compute: <stopped/destroyed + identifiers>
+Destroyed:
+- Compute: <destroyed + identifiers>
 - GPU resources: <released + identifiers>
 - Disks/Volumes: <checked + deleted if unattached>
 - Load balancers / Public IPs: <deleted/released>
@@ -105,6 +105,6 @@ Cost ledger:
 ## Examples of Acceptable Evidence
 
 - CLI output showing deletion, e.g. `terraform destroy` summary or `kubectl get nodes` showing no nodes.
-- Provider console screenshot showing "0 running instances" and no active load balancers.
+- Provider console screenshot showing "0 instances" (deleted, not merely stopped) and no active load balancers.
 - HCP Terraform run link showing a successful destroy or workspace deletion.
 - Audit log links for resource deletion (where available).

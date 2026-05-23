@@ -21,11 +21,11 @@ Not allowed:
 - A PR is required for changes that:
   - Add/modify infrastructure (Terraform, scripts) or otherwise create billable resources.
   - Add results (benchmarks, reports, dashboards) produced by a paid run.
-- `cost-ledger.md` must be updated in the same PR that introduces the spend.
+- `cost-ledger.md` must be updated in the same PR that creates or changes the billable resources.
 
 ## Budget Guardrails
 - Set an explicit estimated cost in the Linear issue before creating resources.
-- Default per-experiment cap is the provider-specific cap listed in `docs/credits/inventory.md`.
+- Default per-experiment cap is the provider-specific cap listed in `docs/credits/inventory.md`. For providers not listed there, the default cap is $10 per experiment.
 - If an experiment needs more than the default cap, document the reason and approval in the Linear issue.
 
 ## Resource Hygiene

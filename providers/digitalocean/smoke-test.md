@@ -97,12 +97,14 @@ At minimum know in advance:
 - `run_id`
 - `git_commit_sha`
 - `repo`
+- `model_slug`
+- `saaq_version`
+- `telemetry_source`
 - `provider` = `do`
 - `region`
 - `instance_type`
-- gpu_type
-- saaq_version
-- Date
+- `gpu_type`
+- `Date` for artifact-path planning
 - `artifact_uris` target prefix
 
 ## Execution

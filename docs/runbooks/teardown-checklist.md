@@ -49,7 +49,7 @@ If anything is preserved, document:
 - Load balancers deleted
 - Public IPs released
 - Firewalls/security groups reviewed for overly-broad rules
-- VPNs/tunnels torn down
+- VPNs/tunnels/NAT gateways/routers torn down
 
 4. IAM / Secrets
 - Temporary credentials revoked

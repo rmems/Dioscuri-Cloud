@@ -4,9 +4,9 @@ terraform {
 
 locals {
   onboarding_metadata = {
-    environment = var.environment
-    project     = var.project_name
-    providers   = var.target_providers
-    owner       = var.owner
+    environment      = var.environment
+    project_name     = var.project_name
+    target_providers = var.target_providers
+    owner            = var.owner
   }
 }

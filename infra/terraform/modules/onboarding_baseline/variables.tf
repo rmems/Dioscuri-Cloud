@@ -16,5 +16,5 @@ variable "owner" {
 variable "target_providers" {
   description = "Provider list this scaffold is expected to support later."
   type        = list(string)
-  default     = ["ibm", "gcp", "digitalocean", "aws", "azure"]
+  default     = ["ibm", "gcp", "do", "aws", "azure"]
 }

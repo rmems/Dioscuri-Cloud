@@ -8,6 +8,11 @@ output "environment" {
   value       = var.environment
 }
 
+output "owner" {
+  description = "Owner or team label for the onboarding environment."
+  value       = var.owner
+}
+
 output "target_providers" {
   description = "Provider list targeted by future onboarding work."
   value       = var.target_providers

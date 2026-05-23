@@ -55,7 +55,7 @@ These commands are examples. Use credentials configured via HCP Terraform worksp
 
 ```bash
 export PROVIDER=aws
-export RUN_DATE="$(date +%F)"
+export RUN_DATE="$(date -u +%F)"
 export RUN_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
 export S3_BUCKET="<your-bucket>"
 
@@ -66,7 +66,7 @@ aws s3 cp /tmp/dioscuri-cloud-smoke "s3://$S3_BUCKET/dioscuri-cloud/smoke-tests/
 
 ```bash
 export PROVIDER=gcp
-export RUN_DATE="$(date +%F)"
+export RUN_DATE="$(date -u +%F)"
 export RUN_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
 export GCS_BUCKET="<your-bucket>"
 
@@ -77,14 +77,14 @@ gsutil -m cp -r /tmp/dioscuri-cloud-smoke/* "gs://$GCS_BUCKET/dioscuri-cloud/smo
 
 ```bash
 export PROVIDER=ibm
-export RUN_DATE="$(date +%F)"
+export RUN_DATE="$(date -u +%F)"
 export RUN_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
 export COS_BUCKET="<your-bucket>"
 
 # Example using ibmcloud COS CLI plugin (install/configure separately)
 ibmcloud cos upload --bucket "$COS_BUCKET" --key "dioscuri-cloud/smoke-tests/$PROVIDER/$RUN_DATE/$RUN_ID/hello-dioscuri-cloud.txt" --file /tmp/dioscuri-cloud-smoke/hello-dioscuri-cloud.txt
-ibmcloud cos upload --bucket "$COS_BUCKET" --key "dioscuri-cloud/smoke-tests/$PROVIDER/$RUN_DATE/$RUN_ID/manifest.json" --file /tmp/dioscuri-cloud-smoke/manifest.json
 ibmcloud cos upload --bucket "$COS_BUCKET" --key "dioscuri-cloud/smoke-tests/$PROVIDER/$RUN_DATE/$RUN_ID/summary.json" --file /tmp/dioscuri-cloud-smoke/summary.json
+ibmcloud cos upload --bucket "$COS_BUCKET" --key "dioscuri-cloud/smoke-tests/$PROVIDER/$RUN_DATE/$RUN_ID/manifest.json" --file /tmp/dioscuri-cloud-smoke/manifest.json
 ```
 
 ## Run Record Template

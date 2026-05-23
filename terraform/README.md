@@ -49,3 +49,5 @@ This repo runs basic Terraform checks in GitHub Actions for pull requests:
 
 These checks are intentionally limited and do not perform remote planning/applying.
 HCP Terraform (later) will run remote plans/applies with configured workspaces, providers, and credentials/OIDC.
+
+See also: `docs/hcp/vcs-integration.md`.

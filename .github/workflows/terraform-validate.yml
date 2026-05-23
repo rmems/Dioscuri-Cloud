@@ -1,0 +1,64 @@
+name: terraform-validate
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-validate.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-validate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  fmt:
+    name: Terraform fmt (check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: terraform fmt -check -recursive
+        run: terraform fmt -check -recursive terraform
+
+  validate:
+    name: Terraform validate (safe subset)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Validate modules (no providers required)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Module skeletons should validate without provider plugins.
+          for d in terraform/modules/*; do
+            if [ -d "$d" ]; then
+              echo "Validating module: $d"
+              terraform -chdir="$d" init -backend=false
+              terraform -chdir="$d" validate
+            fi
+          done
+
+      - name: Env validation skipped (provider wiring deferred)
+        run: |
+          echo "Env validation is intentionally skipped."
+          echo "terraform/envs/* currently lacks provider blocks and would require credentials."
+          echo "Once providers/OIDC are added, enable env validation here."

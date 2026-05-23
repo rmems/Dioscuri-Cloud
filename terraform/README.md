@@ -39,3 +39,12 @@ Until then:
 ## Formatting
 
 Terraform files should be kept `terraform fmt` clean.
+
+## GitHub Actions vs HCP Terraform
+
+This repo runs basic Terraform checks in GitHub Actions for pull requests:
+- `terraform fmt -check -recursive`
+- `terraform validate` for module skeletons that do not require provider credentials
+
+These checks are intentionally limited and do not perform remote planning/applying.
+HCP Terraform (later) will run remote plans/applies with configured workspaces, providers, and credentials/OIDC.

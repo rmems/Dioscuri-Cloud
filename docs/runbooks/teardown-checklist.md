@@ -39,7 +39,7 @@ If anything is preserved, document:
 - Spot/preemptible instances terminated
 
 2. Storage
-- Unattached disks/volumes checked and deleted
+- Unattached disks/volumes/databases checked and deleted
 - Snapshots/images reviewed and deleted unless required
 - Object storage:
   - confirm only intended artifacts remain

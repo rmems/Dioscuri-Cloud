@@ -115,7 +115,7 @@ At minimum know in advance:
    - artifact generation + upload verification
 4. Upload/store artifacts in the selected prefix.
 5. Record:
-   - start/end time
+   - start_time_utc / end_time_utc
    - estimated cost
    - actual cost if available immediately
    - artifact URIs

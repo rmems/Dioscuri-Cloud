@@ -21,7 +21,7 @@ Not allowed:
 - A PR is required for changes that:
   - Add/modify infrastructure (Terraform, scripts) or otherwise create billable resources.
   - Add results (benchmarks, reports, dashboards) produced by a paid run.
-- `cost-ledger.md` must be updated in the same PR that creates or changes the billable resources.
+- `cost-ledger.md` must be updated in the same PR that creates or changes the billable resources, or in the results PR if no prior ledger entry exists for that run.
 
 ## Budget Guardrails
 - Set an explicit estimated cost in the Linear issue before creating resources.
@@ -36,7 +36,7 @@ Not allowed:
   - `owner`, `linear`, `pr`, `teardown_by`.
 
 ## Teardown Requirements
-- Teardown must be planned up-front and executed promptly after the experiment completes.
+- Teardown must be planned up-front and executed promptly after the experiment completes. For providers listed in `docs/credits/inventory.md`, follow the provider-specific teardown deadline in the Budget caps / guardrails column (e.g., DigitalOcean within 24 h of completion, Azure same day when possible).
 - Teardown evidence is required in `cost-ledger.md`:
   - Provider console link showing resource deleted, or
   - CLI output snippet confirming deletion, or

@@ -91,6 +91,7 @@ Artifacts Preserved:
 - Storage path(s): <bucket/prefix>
 - Reason: <why needed>
 - Expected ongoing cost: <$X/month or 0>
+- Owner: <user/team>
 - Review/teardown date: <date>
 
 Proof:

@@ -37,6 +37,7 @@ cost-ledger.md             Running estimate of cloud credit usage
 | AWS | SageMaker/S3/ECR/IAM MLOps practice and certification alignment |
 | Azure | Azure ML/Blob/Key Vault practice and certification alignment |
 | GCP / Vertex AI | Managed ML and AI platform practice |
+| IBM Cloud | Watsonx trials and IBM provider practice |
 | Vultr | Opportunistic GPU tests only, due to availability uncertainty |
 | HashiCorp | Terraform/HCP control plane, not model compute |
 

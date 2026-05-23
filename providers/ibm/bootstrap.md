@@ -70,6 +70,10 @@ variable "ibmcloud_region" {
   type = string
 }
 
+variable "ibmcloud_resource_group" {
+  type = string
+}
+
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
   region           = var.ibmcloud_region

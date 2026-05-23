@@ -100,7 +100,9 @@ At minimum know in advance:
 - `provider` = `do`
 - `region`
 - `instance_type`
-- `gpu_type`
+- gpu_type
+- saaq_version
+- Date
 - `artifact_uris` target prefix
 
 ## Execution

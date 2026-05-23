@@ -83,6 +83,7 @@ provider "ibm" {
 In HCP Terraform, map variables:
 - `ibmcloud_api_key` <- `IBMCLOUD_API_KEY`
 - `ibmcloud_region` <- `IBMCLOUD_REGION`
+- `ibmcloud_resource_group` <- `IBMCLOUD_RESOURCE_GROUP`
 
 Do not add `.tfvars` with secrets to the repo.
 

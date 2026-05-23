@@ -124,7 +124,7 @@ GPU Smoke-Test Readiness
 Readiness:
 - [ ] Local baseline completed
 - [ ] No-GPU object storage smoke completed
-- [ ] Cost estimate recorded in cost-ledger.md
+- [ ] Cost estimate recorded in cost-ledger.md (Link: <...>)
 - [ ] Provider selected
 - [ ] Region selected
 - [ ] GPU SKU selected

@@ -52,7 +52,7 @@ The tracked file `remote_state_override.tf.example` defines the intended backend
 Do not rename the example file in git.
 
 To enable remote state locally:
-- copy `infra/terraform/remote_state_override.tf.example` to `infra/terraform/remote_state_override.tf`
+- copy infra/terraform/remote_state_override.tf.example to the target environment directory (e.g., infra/terraform/environments/dev/remote_state_override.tf)
 - keep the copied file untracked (it is already ignored by the repo-wide `*_override.tf` rule)
 - run `terraform login` or provide an HCP token via environment variables
 

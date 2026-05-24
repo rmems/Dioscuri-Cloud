@@ -1,0 +1,12 @@
+# Placeholder-only example. Copy locally to an ignored .tfvars file if needed.
+# Do not put VULTR_API_KEY or any other secret in tfvars.
+
+region               = "ewr"
+resource_name_prefix = "dioscuri-vultr"
+owner                = "placeholder-owner"
+repo                 = "dioscuri-cloud"
+provider_label       = "vultr"
+teardown_by          = "2026-05-28"
+
+enable_no_gpu_smoke_resources = false
+enable_gpu_smoke_resources    = false

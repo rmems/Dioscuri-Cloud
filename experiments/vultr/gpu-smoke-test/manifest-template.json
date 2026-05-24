@@ -1,0 +1,23 @@
+{
+  "run_id": "<run_id>",
+  "git_commit_sha": "<sha>",
+  "repo": "rmems/Dioscuri-Cloud",
+  "model_slug": "infrastructure-smoke",
+  "saaq_version": "n/a",
+  "telemetry_source": "vultr_smoke_test",
+  "provider": "vultr",
+  "region": "<region>",
+  "instance_type": "<vultr plan or inference target>",
+  "gpu_type": "<gpu type or null>",
+  "start_time_utc": "<YYYY-MM-DDTHH:MM:SSZ>",
+  "end_time_utc": "<YYYY-MM-DDTHH:MM:SSZ>",
+  "estimated_cost_usd": 0,
+  "actual_cost_usd": null,
+  "artifact_uris": [],
+  "teardown_confirmed": false,
+  "notes": "Fill after the approved Vultr smoke test. Do not include secrets or private account details.",
+  "validation_status": "pending",
+  "cost_ledger_ref": "cost-ledger.md",
+  "linear_issue": "<KEY or N/A>",
+  "github_issue": "rmems/Dioscuri-Cloud#39"
+}

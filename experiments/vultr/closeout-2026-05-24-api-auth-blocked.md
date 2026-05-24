@@ -20,9 +20,9 @@ Terraform scaffold completed: `yes, in this PR; validation passed with -backend=
 
 No-GPU preflight completed: `blocked; local VULTR_API_KEY was present but account-scoped API calls returned HTTP 401`
 
-GPU/inference go-no-go completed: `no-go; public GPU catalog is visible, but account quota/stock/access could not be verified`
+GPU/inference go-no-go completed: `blocked; public GPU catalog is visible, but account quota/stock/access could not be verified`
 
-GPU/inference smoke completed: `no; not approved because #38 is no-go`
+GPU/inference smoke completed: `no; not approved because #38 is blocked`
 
 ## Resource Audit
 

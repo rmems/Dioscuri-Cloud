@@ -38,7 +38,7 @@ Quota/stock/access status: `blocked`; authenticated account checks returned HTTP
 
 ## Decision
 
-Outcome: `no-go`
+Outcome: `blocked`
 
 Selected target if go: `none`
 
@@ -48,7 +48,7 @@ Cost cap if go: `N/A`
 
 Teardown path if go: `N/A`
 
-Fallback if no-go or blocked: rotate or correct the local Vultr API token, rerun #37 account/API preflight, then rerun this go/no-go check before approving #39. If auth cannot be fixed before `2026-05-28`, move GPU smoke work to another provider and keep Vultr as fallback-only.
+Fallback if blocked: rotate or correct the local Vultr API token, rerun #37 account/API preflight, then rerun this go/no-go check before approving #39. If auth cannot be fixed before `2026-05-28`, move GPU smoke work to another provider and keep Vultr as fallback-only.
 
 ## Public-Safe Evidence
 

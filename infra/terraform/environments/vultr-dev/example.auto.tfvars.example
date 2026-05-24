@@ -3,7 +3,7 @@
 
 region               = "ewr"
 resource_name_prefix = "dioscuri-vultr"
-owner                = "rmems"
+owner                = "placeholder-owner"
 repo                 = "dioscuri-cloud"
 provider_label       = "vultr"
 teardown_by          = "2026-05-28"

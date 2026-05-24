@@ -28,3 +28,8 @@ locals {
 
 # This environment is intentionally metadata-only until a reviewed smoke-test
 # issue approves specific Vultr resources, costs, runtime caps, and teardown.
+# When resources are added, each resource block MUST be gated with
+#   count = var.enable_no_gpu_smoke_resources ? 1 : 0
+# or
+#   count = var.enable_gpu_smoke_resources ? 1 : 0
+# as appropriate, so the flags function as the safety interlocks the README documents.

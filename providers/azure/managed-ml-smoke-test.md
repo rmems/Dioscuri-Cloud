@@ -29,7 +29,7 @@ Do not use this runbook for:
 - ../../docs/runbooks/gpu-smoke-test-readiness.md
 - ../../docs/runbooks/teardown-checklist.md
 - ../../docs/schemas/experiment-manifest.md
-- ../../cost-ledger.md#direct-link-to-entry
+- ../../cost-ledger.md (link the concrete row, PR, or issue comment when recording the estimate)
 
 ## Prerequisites
 

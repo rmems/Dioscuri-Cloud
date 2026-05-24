@@ -21,12 +21,13 @@ infra/terraform/
   environments/
     dev/                      Small onboarding environment composition
       remote_state_override.tf  Local-only copied backend override (untracked)
+    vultr-dev/                Safe Vultr metadata scaffold for credit-window smoke tests
 ```
 
 ## Design Notes
 
 - Terraform is the infrastructure control layer.
-- Provider-specific work will be added later for IBM, GCP, DigitalOcean, AWS, and Azure.
+- Provider-specific work will be added incrementally for IBM, GCP, DigitalOcean, AWS, Azure, and Vultr.
 - Secrets and credentials must stay out of git.
 - This scaffold is safe to validate locally without committed backend credentials.
 
@@ -41,6 +42,7 @@ Recommended model:
 
 Current environment mapping:
 - `infra/terraform/environments/dev` -> `dioscuri-cloud-run-dev`
+- `infra/terraform/environments/vultr-dev` -> `dioscuri-cloud-vultr-dev`
 
 Future environments should follow the same shape, for example:
 - `infra/terraform/environments/staging` -> `dioscuri-cloud-run-staging`
@@ -81,4 +83,8 @@ terraform -chdir=infra/terraform init
 # Validate the actual run environment module
 terraform -chdir=infra/terraform/environments/dev init -backend=false
 terraform -chdir=infra/terraform/environments/dev validate
+
+# Validate the safe Vultr scaffold; no resources are provisioned by default
+terraform -chdir=infra/terraform/environments/vultr-dev init -backend=false
+terraform -chdir=infra/terraform/environments/vultr-dev validate
 ```

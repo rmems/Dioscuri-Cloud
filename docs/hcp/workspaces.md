@@ -45,6 +45,7 @@ Examples (from Issue #3):
 - `dioscuri-cloud-do-gpu-smoke`
 - `dioscuri-cloud-aws-mlops`
 - `dioscuri-cloud-azure-mlops`
+- `dioscuri-cloud-vultr-dev`
 
 Additional recommended examples:
 - `dioscuri-cloud-aws-dev-mlops` (if dev/prod separation is required)
@@ -60,6 +61,7 @@ Additional recommended examples:
 | `dioscuri-cloud-gcp-artifacts` | GCP project boundary | Buckets/Artifact Registry/Service Accounts for artifacts |
 | `dioscuri-cloud-do-gpu-smoke` | DO project boundary | Minimal infra needed for a repeatable GPU smoke test |
 | `dioscuri-cloud-ibm-dev` | IBM account boundary | Dev/testing infrastructure only (short-lived by default) |
+| `dioscuri-cloud-vultr-dev` | Vultr account boundary | Safe metadata scaffold and short-lived Vultr smoke-test planning only |
 
 ## When To Create A New Workspace
 Create a new workspace when:

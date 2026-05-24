@@ -26,10 +26,10 @@ Do not use this runbook for:
 
 ## Required Supporting Docs
 
-- `docs/runbooks/gpu-smoke-test-readiness.md`
-- `docs/runbooks/teardown-checklist.md`
-- `docs/schemas/experiment-manifest.md`
-- `cost-ledger.md`
+- ../../docs/runbooks/gpu-smoke-test-readiness.md
+- ../../docs/runbooks/teardown-checklist.md
+- ../../docs/schemas/experiment-manifest.md
+- ../../cost-ledger.md#direct-link-to-entry
 
 ## Prerequisites
 

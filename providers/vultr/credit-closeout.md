@@ -1,12 +1,13 @@
 # Vultr Credit Closeout
 
-Use this closeout before the Vultr credit expiration on `2026-05-28`, and after any no-GPU, GPU, or inference run.
+Use this closeout record for the completed Vultr credit window. Vultr is not in the active near-term execution path.
 
 Closeout goals:
 - prove no accidental billable resources remain
 - reconcile `cost-ledger.md` Vultr rows
 - document API key revoke/rotation status
 - record whether Vultr remains useful for Dioscuri-Cloud
+- make clear that no Vultr API keys should be uploaded/configured for current work
 
 ## Resource Audit
 
@@ -83,9 +84,13 @@ Record exactly one recommendation in the closeout template:
 - `fallback-only`: keep docs, but prefer other providers for planned runs
 - `remove from active short-term execution path`: do not plan near-term work on Vultr
 
+Current recommendation after the 2026-05-28 credit closeout: `remove from active short-term execution path`.
+
 ## Closeout Template
 
 Use `experiments/vultr/closeout-template.md` for the final public-safe report.
+
+The 2026-05-27 serverless inference sprint closeout is recorded in `experiments/vultr/2026-05-27-serverless-inference-credit-sprint.md`. That report records `$237.31` consumed, `$12.69` expired, `$0.00` owed, and `1,604,112+` tokens without committing private billing identifiers or secrets. Do not upload, configure, or commit Vultr API material for the current issue bundle.
 
 Related docs:
 - Bootstrap: `providers/vultr/bootstrap.md`
@@ -94,3 +99,4 @@ Related docs:
 - Teardown checklist: `docs/runbooks/teardown-checklist.md`
 - GPU go/no-go: `experiments/vultr/gpu-go-no-go/README.md`
 - GPU smoke test: `experiments/vultr/gpu-smoke-test/README.md`
+- Serverless inference sprint: `experiments/vultr/2026-05-27-serverless-inference-credit-sprint.md`

@@ -25,6 +25,27 @@ The Vultr credit window was closed through a serverless inference sprint after e
 | Expired promo credit | `$12.69` on `2026-05-28` |
 | Token usage | `1,604,112+` tokens |
 
+## Invoice Evidence
+
+Public-safe invoice fields from the final Vultr serverless inference credit statement:
+
+| Field | Value |
+|---|---:|
+| Invoice date | `2026-06-01` |
+| Service start | `2026-05-23 20:15` |
+| Service end | `2026-06-01 00:00` |
+| Line item | `Vultr Serverless Inference usage (Coding Agent) (blended rate/1M tokens)` |
+| Billed quantity | `554` |
+| Subtotal | `$237.31` |
+| Free credits applied | `$237.31` |
+| Taxable amount | `$0.00` |
+| Sales tax | `$0.00` |
+| Total | `$237.31` |
+| Credits and payments | `$237.31` |
+| Total less credits and payments | `$0.00` |
+
+The invoice number, account email, and line-item identifier are intentionally omitted from this repo because they are private billing/account identifiers.
+
 Interpretation: `$237.31` of the `$250.00` promo credit was consumed by serverless inference usage. `$12.69` expired or was forfeited as promo credit. No amount was owed after credit application.
 
 ## Execution Pivot

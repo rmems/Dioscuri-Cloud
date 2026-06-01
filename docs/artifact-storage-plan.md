@@ -35,6 +35,10 @@ Every artifact-backed run should include:
 - Git commit SHA.
 - GitHub issue or PR reference.
 - Provider and region.
+- `saaq_version`.
+- `model_slug`.
+- `telemetry_source`.
+- `start_time_utc` and `end_time_utc`.
 - Runtime cap and cost cap.
 - Actual cost when available.
 - Artifact root URI or repo-relative path.
@@ -51,7 +55,7 @@ Every artifact-backed run should include:
 | Oracle Cloud | Object Storage | Good fit for persistent telemetry/RAG service artifacts. |
 | DigitalOcean | Spaces | Simple small-object smoke-test target. |
 | GCP | Cloud Storage | Use only under strict monthly credit caps. |
-| Vultr | Object Storage or external checked summaries | Prefer records only unless future auth/capacity gates pass. |
+| Vultr | Checked closeout summaries only | Inactive for near-term execution; do not upload/configure Vultr API keys unless a future issue reactivates provider use. |
 
 ## Implementation Guardrails
 

@@ -13,6 +13,8 @@ Closeout goals:
 
 Run read-only CLI/API checks where possible and redact private account details before sharing output.
 
+Current status after the 2026-05-28 closeout: Vultr is inactive for near-term execution, and this repo update must not upload/configure Vultr API material. If no already-approved authenticated context is available, record the audit as `not performed` rather than reintroducing credentials.
+
 Minimum categories to check:
 - cloud compute instances
 - GPU instances
@@ -76,6 +78,8 @@ After the final run or no-go decision:
 - record the decision as `revoked`, `rotated`, or `retained with reason`
 
 Do not commit key names, token values, token prefixes, or screenshots that identify private account details.
+
+Current PR status: no Vultr API key or Vultr HCP variable is uploaded/configured by this PR. Any provider-side cleanup for pre-existing keys must happen outside the repo and should be recorded only as a public-safe status note.
 
 ## Final Provider Recommendation
 

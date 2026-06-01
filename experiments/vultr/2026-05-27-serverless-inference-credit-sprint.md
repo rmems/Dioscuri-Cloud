@@ -1,6 +1,8 @@
 # Vultr Serverless Inference Credit Sprint
 
-Date: `2026-05-27`
+Start time UTC: `2026-05-27T00:00:00Z`
+
+End time UTC: `2026-05-27T23:59:59Z`
 
 Provider: `vultr`
 
@@ -50,6 +52,10 @@ Earlier Vultr work recorded API/auth blockers and GPU availability uncertainty. 
 ## Resource Closeout
 
 No active Vultr compute resource is recorded as created by this repo for the serverless sprint. Serverless inference usage was reconciled through the billing closeout values above. Vultr is considered inactive for near-term execution, and this repo update does not upload/configure Vultr API access.
+
+Authenticated Vultr resource audit status: `not performed in this PR`. The repo should not upload or configure Vultr API material to complete a post-credit audit unless a future issue explicitly reactivates Vultr. This report therefore records the public-safe billing closeout and the absence of repo-managed compute resources, but does not claim account-wide proof that no pre-existing Vultr resources exist.
+
+API/HCP cleanup status: `no Vultr API key or HCP Vultr variable was uploaded or configured by this PR`. Any pre-existing local/provider-side keys should be revoked or rotated outside the repo.
 
 ## Lessons Learned
 

@@ -46,6 +46,19 @@ Public-safe invoice fields from the final Vultr serverless inference credit stat
 
 The invoice number, account email, and line-item identifier are intentionally omitted from this repo because they are private billing/account identifiers.
 
+## Console Snapshot Evidence
+
+Public-safe facts visible in the Vultr serverless inference console snapshot:
+
+| Field | Value |
+|---|---:|
+| API status | `OK` |
+| Token usage | `1,604,112` |
+| Current charges | `$237.29` |
+| Label | `Coding Agent` |
+
+The snapshot is consistent with the final invoice closeout and should be treated as a point-in-time dashboard view, not a private credential source. The visible API key, account email, and subscription/manage identifier are intentionally omitted from this repo.
+
 Interpretation: `$237.31` of the `$250.00` promo credit was consumed by serverless inference usage. `$12.69` expired or was forfeited as promo credit. No amount was owed after credit application.
 
 ## Execution Pivot

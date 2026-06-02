@@ -106,12 +106,14 @@ Provider-specific (examples):
 - DigitalOcean:
   - `DIGITALOCEAN_TOKEN` (sensitive)
 - Vultr:
-  - `VULTR_API_KEY` (sensitive)
+  - Inactive after the 2026-05-28 credit closeout.
+  - Do not add `VULTR_API_KEY` or create Vultr HCP workspace variables unless a future issue explicitly reactivates Vultr.
 
 Conventions:
 - Mark all credentials as sensitive variables in HCP.
 - Prefer provider-native workload identity / OIDC where possible (tracked in a later issue).
 - Rotate/revoke credentials after experiments.
+- Treat retired providers as docs-only until reactivated by a new issue.
 
 ## Why GPU Compute Costs Are Not HashiCorp Credits
 HashiCorp credits primarily offset control-plane services (e.g., Terraform Cloud/HCP capabilities such as runs, state storage, policy checks, and collaboration features). GPU compute and managed ML services are billed by the cloud provider running the hardware and platform (AWS/Azure/GCP/DO/Vultr/etc.).

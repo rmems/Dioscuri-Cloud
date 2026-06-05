@@ -11,7 +11,7 @@ HCP Terraform is the control plane for infrastructure state, policy, and drift d
 - Support GitHub VCS integration later without renaming everything.
 
 ## Organization Layout
-HCP Terraform organization: `Limen-Neural`.
+HCP Terraform organization: `Dioscuri-Cloud`.
 
 Recommended structure inside a single HCP Terraform org:
 - Folder/Project grouping (in HCP UI):
@@ -53,7 +53,7 @@ Additional recommended examples:
 
 ## Active workspaces (Issue #46)
 
-Organization: `Limen-Neural`  
+Organization: `Dioscuri-Cloud`  
 Repository: `rmems/Dioscuri-Cloud`  
 Default apply mode: **manual** (no global auto-apply)  
 Default execution: **remote**  

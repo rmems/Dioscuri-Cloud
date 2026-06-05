@@ -51,7 +51,7 @@ Provider-specific stacks live under `terraform/envs/` (IBM, Oracle, GCP) and use
 Future environments should follow the same shape, for example:
 - `infra/terraform/environments/staging` -> `dioscuri-cloud-hcp-staging` (if needed)
 
-The tracked file `remote_state_override.tf.example` defines the intended backend shape for run environments using HCP Terraform in organization `Limen-Neural`.
+The tracked file `remote_state_override.tf.example` defines the intended backend shape for run environments using HCP Terraform in organization `Dioscuri-Cloud`.
 Its workspace name is intentionally a placeholder so operators must replace it with the exact environment workspace instead of accidentally reusing `dev` state.
 Copy its contents into the specific environment root module that will be initialized.
 

@@ -34,7 +34,7 @@ Control-plane onboarding (no provider resources) lives under `infra/terraform/en
 
 ## State and HCP Terraform
 
-- Organization: `Limen-Neural`
+- Organization: `Dioscuri-Cloud`
 - One HCP workspace per env folder; see `docs/hcp/workspaces.md`
 - Variable mapping: `docs/hcp/provider-variable-map.md`
 - VCS integration: `docs/hcp/vcs-integration.md`

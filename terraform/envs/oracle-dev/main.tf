@@ -3,7 +3,7 @@ terraform {
 }
 
 // Provider configuration and resource implementations are intentionally deferred.
-// HCP workspace: dioscuri-cloud-oracle-dev (org Limen-Neural).
+// HCP workspace: dioscuri-cloud-oracle-dev (org Dioscuri-Cloud).
 // See providers/oracle/bootstrap.md and docs/hcp/provider-variable-map.md.
 
 module "artifacts" {

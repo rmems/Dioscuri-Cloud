@@ -6,7 +6,7 @@ Goal: remote state + plan/apply history + speculative plans on pull requests.
 
 ## Prerequisites
 
-- HCP Terraform organization: `Limen-Neural`.
+- HCP Terraform organization: `Dioscuri-Cloud`.
 - Access to the GitHub repo: `rmems/Dioscuri-Cloud`.
 - Workspace naming and directories: see `docs/hcp/workspaces.md`.
 - Provider credentials (or OIDC configuration) must be configured as HCP Terraform workspace variables.
@@ -50,7 +50,7 @@ Create or align these three workspaces in HCP Terraform:
 
 ## Manual HCP UI steps (operator)
 
-1. Sign in to HCP Terraform and open organization `Limen-Neural`.
+1. Sign in to HCP Terraform and open organization `Dioscuri-Cloud`.
 2. For each workspace in the table, confirm name, VCS link, and working directory.
 3. Enable speculative plans; confirm auto-apply is off.
 4. Attach variable sets: common set to all three; IBM/OCI sets only to matching workspaces.

@@ -3,7 +3,7 @@
 IBM Cloud dev environment skeleton.
 
 HCP Terraform:
-- Organization: `Limen-Neural`
+- Organization: `Dioscuri-Cloud`
 - Workspace: `dioscuri-cloud-ibm-dev`
 - Working directory: `terraform/envs/ibm-dev`
 

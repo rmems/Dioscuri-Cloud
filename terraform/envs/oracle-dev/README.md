@@ -3,7 +3,7 @@
 Oracle Cloud dev environment skeleton.
 
 HCP Terraform:
-- Organization: `Limen-Neural`
+- Organization: `Dioscuri-Cloud`
 - Workspace: `dioscuri-cloud-oracle-dev`
 - Working directory: `terraform/envs/oracle-dev`
 

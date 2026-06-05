@@ -4,7 +4,7 @@ Public-safe run record for GitHub issue #46: HCP Terraform control-plane setup f
 
 ## Scope
 
-- Organization: `Limen-Neural`
+- Organization: `Dioscuri-Cloud`
 - Active workspaces (intended): `dioscuri-cloud-hcp-core`, `dioscuri-cloud-ibm-dev`, `dioscuri-cloud-oracle-dev`
 - No provider credentials, OCIDs, API keys, or account identifiers in this document.
 
@@ -21,7 +21,7 @@ Public-safe run record for GitHub issue #46: HCP Terraform control-plane setup f
 
 | Tool | Status | Notes |
 |---|---|---|
-| `terraform` v1.15.3 | **login ok / org missing** | Token valid for user `montoyaraul34`; **zero organizations** on `app.terraform.io` — create org (e.g. `Limen-Neural`) in HCP UI before `terraform init` with remote backend |
+| `terraform` v1.15.3 | **ok** | Org `Dioscuri-Cloud` verified on `app.terraform.io`; remote `terraform init` pending workspace creation |
 | `ibmcloud` v2.43.1 | **ok** | Region `us-south`; RG `dioscuri-cloud` created; COS plugin installed — see `experiments/ibm/2026-06-05-account-preflight.md` |
 | `oci` v3.85.0 (`~/bin/oci`) | **ok** | Home region `us-phoenix-1`; bucket `dioscuri-cloud-dev-artifacts` verified |
 
@@ -35,9 +35,9 @@ export PATH="$HOME/bin:$PATH"
 
 | Workspace | Status | Working dir matches repo | Speculative plans | Manual apply | Notes |
 |---|---|---|---|---|---|
-| `dioscuri-cloud-hcp-core` | blocked | `infra/terraform/environments/dev` | n/a | n/a | HCP org must be created first |
-| `dioscuri-cloud-ibm-dev` | blocked | `terraform/envs/ibm-dev` | n/a | n/a | IBM CLI ready; HCP org/workspaces missing |
-| `dioscuri-cloud-oracle-dev` | blocked | `terraform/envs/oracle-dev` | n/a | n/a | OCI CLI ready; HCP org/workspaces missing |
+| `dioscuri-cloud-hcp-core` | org ready | `infra/terraform/environments/dev` | TBD | manual | `terraform init` OK against org `Dioscuri-Cloud`; create workspace in HCP UI if missing |
+| `dioscuri-cloud-ibm-dev` | org ready | `terraform/envs/ibm-dev` | TBD | manual | Create workspace + VCS link in HCP UI |
+| `dioscuri-cloud-oracle-dev` | org ready | `terraform/envs/oracle-dev` | TBD | manual | Create workspace + VCS link in HCP UI |
 
 ## Speculative plan validation (test PR)
 
@@ -49,7 +49,7 @@ export PATH="$HOME/bin:$PATH"
 
 ## Credit separation
 
-- HashiCorp student credits: **not used yet** — logged in but no HCP organization exists to run against.
+- HashiCorp student credits: **ready** — org `Dioscuri-Cloud` exists; burns on first HCP workspace run.
 - IBM `$200`: **bootstrap started** — `dioscuri-cloud` resource group (no COS/compute yet).
 - Oracle `$300`: **first resource live** — bucket `dioscuri-cloud-dev-artifacts`; see `cost-ledger.md` row `2026-06-04`.
 

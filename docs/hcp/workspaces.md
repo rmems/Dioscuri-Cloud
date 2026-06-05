@@ -75,6 +75,15 @@ IBM and Oracle workspaces must remain isolated (separate state, separate sensiti
 Variable names: `docs/hcp/provider-variable-map.md`  
 VCS setup: `docs/hcp/vcs-integration.md`
 
+### SAAQ workload note
+
+The `ibm-dev` and `oracle-dev` workspaces back the SAAQ artifact store + CPU
+validation pipeline (explore / validate / store the corinth-canal SAAQ runs that
+feed `Surrogate_Viz.jl`). Object storage layout, the portable run manifest, the
+sync contract, and CPU-only validation jobs are defined in
+`docs/saaq/cloud-store.md`. GPU re-runs (which require GGUF/safetensors weights)
+are deferred to separate issues and are not part of these dev workspaces.
+
 ## Deferred workspaces (document only; do not create unless needed)
 
 | Workspace | Intended working directory | Notes |

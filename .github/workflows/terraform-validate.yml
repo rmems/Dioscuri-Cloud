@@ -95,8 +95,12 @@ jobs:
           terraform -chdir=infra/terraform/environments/vultr-dev init -backend=false
           terraform -chdir=infra/terraform/environments/vultr-dev validate
 
-      - name: Env validation skipped (provider wiring deferred)
+      - name: Validate oracle-dev scaffold environment
         run: |
-          echo "Env validation is intentionally skipped."
-          echo "terraform/envs/* currently lacks provider blocks and would require credentials."
-          echo "Provider-specific infra environments should be added to safe validation explicitly."
+          terraform -chdir=terraform/envs/oracle-dev init -backend=false
+          terraform -chdir=terraform/envs/oracle-dev validate
+
+      - name: Env validation skipped (ibm-dev provider wiring deferred)
+        run: |
+          echo "terraform/envs/ibm-dev validation skipped until IBM provider block is added."
+          echo "terraform/envs/oracle-dev is validated above; ibm-dev can be added similarly when ready."

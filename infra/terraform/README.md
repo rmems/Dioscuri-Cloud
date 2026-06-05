@@ -40,13 +40,16 @@ Recommended model:
 - one state file per environment folder
 - no shared workspace spanning unrelated environments
 
+HCP workspace mapping (active): see `docs/hcp/workspaces.md`.
+
 Current environment mapping:
-- `infra/terraform/environments/dev` -> `dioscuri-cloud-run-dev`
-- `infra/terraform/environments/vultr-dev` -> `dioscuri-cloud-vultr-dev`
+- `infra/terraform/environments/dev` -> `dioscuri-cloud-hcp-core` (control-plane onboarding; no provider resources)
+- `infra/terraform/environments/vultr-dev` -> `dioscuri-cloud-vultr-dev` (inactive; Vultr credit closeout)
+
+Provider-specific stacks live under `terraform/envs/` (IBM, Oracle, GCP) and use separate HCP workspaces.
 
 Future environments should follow the same shape, for example:
-- `infra/terraform/environments/staging` -> `dioscuri-cloud-run-staging`
-- `infra/terraform/environments/prod` -> `dioscuri-cloud-run-prod`
+- `infra/terraform/environments/staging` -> `dioscuri-cloud-hcp-staging` (if needed)
 
 The tracked file `remote_state_override.tf.example` defines the intended backend shape for run environments using HCP Terraform in organization `Limen-Neural`.
 Its workspace name is intentionally a placeholder so operators must replace it with the exact environment workspace instead of accidentally reusing `dev` state.
@@ -58,7 +61,7 @@ Do not rename the example file in git.
 
 To enable remote state locally:
 - copy infra/terraform/remote_state_override.tf.example to the target environment directory (e.g., infra/terraform/environments/dev/remote_state_override.tf)
-- replace `REPLACE_WITH_DIOSCURI_CLOUD_RUN_WORKSPACE` with the exact workspace for that environment (e.g. `dioscuri-cloud-run-dev`)
+- replace `REPLACE_WITH_DIOSCURI_CLOUD_WORKSPACE` with the exact workspace for that environment (e.g. `dioscuri-cloud-hcp-core`)
 - keep the copied file untracked (it is already ignored by the repo-wide `*_override.tf` rule)
 - run `terraform login` or provide an HCP token via environment variables
 

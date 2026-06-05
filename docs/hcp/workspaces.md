@@ -51,17 +51,44 @@ Additional recommended examples:
 - `dioscuri-cloud-aws-dev-mlops` (if dev/prod separation is required)
 - `dioscuri-cloud-gcp-exp-<slug>` (short-lived experiment stack)
 
-## Proposed Workspace Set
+## Active workspaces (Issue #46)
 
-| Workspace | Ownership boundary | What it manages |
+Organization: `Limen-Neural`  
+Repository: `rmems/Dioscuri-Cloud`  
+Default apply mode: **manual** (no global auto-apply)  
+Default execution: **remote**  
+Speculative plans: **enabled** on pull requests
+
+Recommended HCP project/folder grouping (optional in UI):
+- `dioscuri-cloud/core` -> `dioscuri-cloud-hcp-core`
+- `dioscuri-cloud/providers/ibm` -> `dioscuri-cloud-ibm-dev`
+- `dioscuri-cloud/providers/oracle` -> `dioscuri-cloud-oracle-dev`
+
+| Workspace | Working directory | State boundary | Provider mapping | Variable set strategy |
+|---|---|---|---|---|
+| `dioscuri-cloud-hcp-core` | `infra/terraform/environments/dev` | HCP control-plane / onboarding metadata only | None | Common variables only |
+| `dioscuri-cloud-ibm-dev` | `terraform/envs/ibm-dev` | IBM dev account / resource group | IBM Cloud | Common + IBM (`IBMCLOUD_*`) |
+| `dioscuri-cloud-oracle-dev` | `terraform/envs/oracle-dev` | Oracle dev tenancy / compartment | Oracle Cloud | Common + OCI (`OCI_*`) |
+
+IBM and Oracle workspaces must remain isolated (separate state, separate sensitive variable sets).
+
+Variable names: `docs/hcp/provider-variable-map.md`  
+VCS setup: `docs/hcp/vcs-integration.md`
+
+## Deferred workspaces (document only; do not create unless needed)
+
+| Workspace | Intended working directory | Notes |
 |---|---|---|
-| `dioscuri-cloud-hcp-core` | HCP-only / control plane | Terraform Cloud/HCP settings, shared policy hooks, global conventions |
-| `dioscuri-cloud-aws-mlops` | AWS account boundary | IAM/ECR/S3 budgets/alerts and MLOps primitives (no GPU jobs themselves) |
-| `dioscuri-cloud-azure-mlops` | Azure subscription boundary | Resource groups, Key Vault, storage, budgets/alerts |
-| `dioscuri-cloud-gcp-artifacts` | GCP project boundary | Buckets/Artifact Registry/Service Accounts for artifacts |
-| `dioscuri-cloud-do-gpu-smoke` | DO project boundary | Minimal infra needed for a repeatable GPU smoke test |
-| `dioscuri-cloud-ibm-dev` | IBM account boundary | Dev/testing infrastructure only (short-lived by default) |
-| `dioscuri-cloud-vultr-dev` | Vultr account boundary | Safe metadata scaffold and short-lived Vultr smoke-test planning only |
+| `dioscuri-cloud-aws-mlops` | TBD under `terraform/` | AWS MLOps primitives |
+| `dioscuri-cloud-azure-mlops` | TBD under `terraform/` | Azure MLOps primitives |
+| `dioscuri-cloud-gcp-artifacts` | `terraform/envs/gcp-artifacts` | GCP artifacts scaffold exists |
+| `dioscuri-cloud-do-gpu-smoke` | TBD | Bounded GPU smoke only |
+
+## Historical / inactive
+
+| Workspace | Working directory | Notes |
+|---|---|---|
+| `dioscuri-cloud-vultr-dev` | `infra/terraform/environments/vultr-dev` | Vultr credit closeout; do not configure API keys unless a future issue reactivates Vultr |
 
 ## When To Create A New Workspace
 Create a new workspace when:

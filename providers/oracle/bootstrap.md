@@ -51,6 +51,21 @@ Optional: `owner`, `environment`, `budget_cap_usd`.
 - HCP workspace: `dioscuri-cloud-oracle-dev`
 - Provider implementation is deferred; skeleton composes shared modules only.
 
+## Import existing artifact bucket (before first OCI apply)
+
+Bucket `dioscuri-cloud-dev-artifacts` was created manually via OCI CLI before Terraform provider wiring (see `experiments/oracle/2026-06-04-object-storage-bootstrap.md` and `cost-ledger.md`). The default in `terraform/envs/oracle-dev/variables.tf` matches that live bucket so speculative plans succeed today.
+
+When the OCI provider block is added (#48), **import** the bucket into Terraform state before the first apply to avoid a create conflict:
+
+```bash
+# Example — adjust resource address and import ID once provider resources exist
+terraform -chdir=terraform/envs/oracle-dev import \
+  '<oci_object_storage_bucket_resource_address>' \
+  '<namespace>/<bucket_name>'
+```
+
+Record the import run in a public-safe experiment note; do not commit OCIDs or namespace values to git.
+
 ## Recommended first targets (after Issue #46)
 
 1. Object Storage bucket for experiment artifacts (minimal size, clear naming).

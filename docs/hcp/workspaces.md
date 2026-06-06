@@ -57,7 +57,7 @@ Organization: `Dioscuri-Cloud`
 Repository: `rmems/Dioscuri-Cloud`  
 Default apply mode: **manual** (no global auto-apply)  
 Default execution: **remote**  
-Speculative plans: **enabled** on pull requests
+Speculative plans: **intended default** (enable in HCP UI; operator confirmation in `experiments/hcp/2026-06-04-vcs-workspace-preflight.md`)
 
 Recommended HCP project/folder grouping (optional in UI):
 - `dioscuri-cloud/core` -> `dioscuri-cloud-hcp-core`

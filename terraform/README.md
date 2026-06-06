@@ -52,7 +52,7 @@ Terraform files should be kept `terraform fmt` clean.
 This repo runs basic Terraform checks in GitHub Actions for pull requests:
 - `terraform fmt -check -recursive`
 - `terraform init -backend=false` + `terraform validate` for module skeletons
-- `infra/terraform/environments/dev`, `infra/terraform/environments/vultr-dev`, and `terraform/envs/oracle-dev` validate without provider credentials
+- `infra/terraform/environments/dev`, `infra/terraform/environments/vultr-dev`, `terraform/envs/ibm-dev`, and `terraform/envs/oracle-dev` validate without provider credentials
 
 HCP Terraform runs remote plans/applies with workspace variables and credentials configured only in HCP.
 

@@ -100,7 +100,7 @@ jobs:
           terraform -chdir=terraform/envs/oracle-dev init -backend=false
           terraform -chdir=terraform/envs/oracle-dev validate
 
-      - name: Env validation skipped (ibm-dev provider wiring deferred)
+      - name: Validate ibm-dev scaffold environment
         run: |
-          echo "terraform/envs/ibm-dev validation skipped until IBM provider block is added."
-          echo "terraform/envs/oracle-dev is validated above; ibm-dev can be added similarly when ready."
+          terraform -chdir=terraform/envs/ibm-dev init -backend=false
+          terraform -chdir=terraform/envs/ibm-dev validate

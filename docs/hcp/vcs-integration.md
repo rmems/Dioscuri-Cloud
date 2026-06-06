@@ -43,18 +43,33 @@ Create or align these three workspaces in HCP Terraform:
    - Manual apply only (default for all workspaces in this repo).
 
 6. **Variables**
-   - Common: `environment`, `owner`, `repo`, `budget_cap_usd` (non-secret).
-   - IBM workspace: `IBMCLOUD_*` per `docs/hcp/provider-variable-map.md`.
-   - Oracle workspace: `OCI_*` per `docs/hcp/provider-variable-map.md`.
+   - Common (all workspaces): `environment`, `owner`, `repo`, `budget_cap_usd` (non-secret).
+   - Scaffold Terraform variables (required for speculative plans today; see `docs/hcp/provider-variable-map.md`):
+     - `dioscuri-cloud-hcp-core`: `project_name`, `environment`, `owner` (defaults exist in code; optional in HCP).
+     - `dioscuri-cloud-ibm-dev`: `location`, `artifact_bucket_name`, `service_account_name` (defaults exist in code).
+     - `dioscuri-cloud-oracle-dev`: `location`, `artifact_bucket_name`, `service_account_name` (defaults exist in code).
+   - Planned provider auth (not active until #47/#48):
+     - IBM workspace: `IBMCLOUD_*` as **Environment variables**.
+     - Oracle workspace: `OCI_*` as **Environment variables**.
    - Mark all credentials sensitive in HCP; never commit values to GitHub.
+
+## Automated bootstrap (API)
+
+Run `scripts/hcp/bootstrap-workspaces.sh` to create missing workspaces, set working directories, and apply scaffold Terraform variables. Requires `terraform login` (token in `~/.terraform.d/credentials.tfrc.json`).
+
+Optional flags (secrets stay local; never committed):
+- `--sync-oci-from-local` — mirror `~/.oci/config` to oracle-dev environment variables.
+- `--sync-ibm-from-env` — mirror `IBMCLOUD_*` shell env vars to ibm-dev environment variables.
 
 ## Manual HCP UI steps (operator)
 
 1. Sign in to HCP Terraform and open organization `Dioscuri-Cloud`.
-2. For each workspace in the table, confirm name, VCS link, and working directory.
-3. Enable speculative plans; confirm auto-apply is off.
-4. Attach variable sets: common set to all three; IBM/OCI sets only to matching workspaces.
-5. Open a test PR that touches files under one working directory; confirm an HCP speculative plan appears on the PR.
+2. Run `scripts/hcp/bootstrap-workspaces.sh` (or confirm workspaces already match the table).
+3. Install the HashiCorp GitHub app if no VCS provider exists (Settings → VCS Providers → Connect GitHub).
+4. For each workspace in the table, confirm name, VCS link, and working directory.
+5. Enable speculative plans; confirm auto-apply is off.
+6. Attach variable sets: common set to all three; IBM/OCI sets only to matching workspaces.
+7. Open a test PR that touches files under one working directory; confirm an HCP speculative plan appears on the PR.
 
 ## Secrets and variables
 

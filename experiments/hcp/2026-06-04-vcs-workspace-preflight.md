@@ -68,4 +68,4 @@ Per issue #46 acceptance: speculative plans are **documented as blocked** with r
 ## Security confirmation
 
 - [x] No `.tfvars`, state files, or API material in the PR diff
-- [x] GitHub Actions `terraform-validate` workflow green on the PR branch (pending push; local validate passed for ibm-dev + oracle-dev)
+- [x] GitHub Actions `terraform-validate` workflow green on PR #51 ([run 27047359680](https://github.com/rmems/Dioscuri-Cloud/actions/runs/27047359680))

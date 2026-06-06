@@ -1,9 +1,9 @@
 terraform {
   cloud {
-    organization = "Limen-Neural"
+    organization = "Dioscuri-Cloud"
 
     workspaces {
-      name = "REPLACE_WITH_DIOSCURI_CLOUD_RUN_WORKSPACE"
+      name = "REPLACE_WITH_DIOSCURI_CLOUD_WORKSPACE"
     }
   }
 }

@@ -16,7 +16,8 @@ terraform/
     service_account/         IAM principal + minimal bindings abstraction
 
   envs/                      Environment stacks that compose modules
-    ibm-dev/                 IBM Cloud dev scaffold (implementation deferred)
+    ibm-dev/                 IBM Cloud dev (HCP: dioscuri-cloud-ibm-dev)
+    oracle-dev/              Oracle Cloud dev (HCP: dioscuri-cloud-oracle-dev)
     gcp-artifacts/           GCP artifacts scaffold (implementation deferred)
 
   aws/                       Provider-specific notes (legacy placeholder)
@@ -24,17 +25,23 @@ terraform/
   digitalocean/              Provider-specific notes (legacy placeholder)
 ```
 
+Control-plane onboarding (no provider resources) lives under `infra/terraform/environments/dev` and maps to HCP workspace `dioscuri-cloud-hcp-core`. See `infra/terraform/README.md`.
+
 ## Modules vs envs
 
 - `modules/*` define stable inputs/outputs. Implementations may be provider-specific internally, but the interface should remain consistent.
 - `envs/*` are thin compositions for a single provider/account/project boundary. Each env should be safe to `plan`/`apply` independently.
 
-## State
+## State and HCP Terraform
 
-State backend configuration is intentionally deferred until HCP Terraform VCS integration is set up.
-Until then:
-- do not add local state files to git
-- do not commit backend credentials
+- Organization: `Dioscuri-Cloud`
+- One HCP workspace per env folder; see `docs/hcp/workspaces.md`
+- Variable mapping: `docs/hcp/provider-variable-map.md`
+- VCS integration: `docs/hcp/vcs-integration.md`
+
+Tracked code does not include `terraform { cloud { ... } }` blocks; VCS-connected workspaces receive remote backend configuration from HCP. For local CLI against remote state, copy `infra/terraform/remote_state_override.tf.example` to an untracked `*_override.tf` in the target directory.
+
+Do not commit local state files or backend credentials.
 
 ## Formatting
 
@@ -44,10 +51,9 @@ Terraform files should be kept `terraform fmt` clean.
 
 This repo runs basic Terraform checks in GitHub Actions for pull requests:
 - `terraform fmt -check -recursive`
-- `terraform init -backend=false` + `terraform validate` for module skeletons that do not require provider credentials
-- Environment validation (`terraform/envs/*`) is intentionally skipped until provider wiring and auth (OIDC/credentials) exist
+- `terraform init -backend=false` + `terraform validate` for module skeletons
+- `infra/terraform/environments/dev`, `infra/terraform/environments/vultr-dev`, `terraform/envs/ibm-dev`, and `terraform/envs/oracle-dev` validate without provider credentials
 
-These checks are intentionally limited and do not perform remote planning/applying.
-HCP Terraform (later) will run remote plans/applies with configured workspaces, providers, and credentials/OIDC.
+HCP Terraform runs remote plans/applies with workspace variables and credentials configured only in HCP.
 
 See also: `docs/hcp/vcs-integration.md`.

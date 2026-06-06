@@ -46,6 +46,8 @@ Record the following before any paid or retained resource is created:
 
 ## Related Files
 
+- Bootstrap runbook: `providers/oracle/bootstrap.md`
+- HCP workspace map: `docs/hcp/workspaces.md`
 - Provider strategy: `docs/cloud-credit-strategy.md`
 - Artifact plan: `docs/artifact-storage-plan.md`
 - Cost ledger: `cost-ledger.md`

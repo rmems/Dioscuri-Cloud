@@ -1,0 +1,52 @@
+# GitLab CI (secondary) — experimental local-runner validation.
+# GitHub Actions remains the primary merge gate.
+
+stages:
+  - validate
+
+variables:
+  TF_VERSION: "1.10.5"
+
+.terraform-base:
+  image:
+    name: hashicorp/terraform:${TF_VERSION}
+    entrypoint: [""]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+terraform-fmt:
+  extends: .terraform-base
+  stage: validate
+  script:
+    - terraform fmt -check -recursive terraform
+    - terraform fmt -check -recursive infra/terraform
+
+terraform-validate:
+  extends: .terraform-base
+  stage: validate
+  script:
+    - |
+      set -euo pipefail
+      for d in terraform/modules/*; do
+        if [ -d "$d" ]; then
+          echo "Validating module: $d"
+          terraform -chdir="$d" init -backend=false
+          terraform -chdir="$d" validate
+        fi
+      done
+      for d in infra/terraform/modules/*; do
+        if [ -d "$d" ]; then
+          echo "Validating infra module: $d"
+          terraform -chdir="$d" init -backend=false
+          terraform -chdir="$d" validate
+        fi
+      done
+    - terraform -chdir=infra/terraform/environments/dev init -backend=false
+    - terraform -chdir=infra/terraform/environments/dev validate
+    - terraform -chdir=infra/terraform/environments/vultr-dev init -backend=false
+    - terraform -chdir=infra/terraform/environments/vultr-dev validate
+    - terraform -chdir=terraform/envs/oracle-dev init -backend=false
+    - terraform -chdir=terraform/envs/oracle-dev validate
+    - terraform -chdir=terraform/envs/ibm-dev init -backend=false
+    - terraform -chdir=terraform/envs/ibm-dev validate

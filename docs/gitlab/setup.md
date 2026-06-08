@@ -26,6 +26,8 @@ When `gitlab-runner register` prompts interactively, use **only** the instance b
 | GitLab instance URL | `https://gitlab.com/` | `https://gitlab.com/rmems/Dioscuri-Cloud` |
 | GitLab instance URL | `https://gitlab.com/` | Registration page URL or `glrt-...` token |
 
+**Why interactive register fails with 422:** The prompt asks for the **GitLab instance URL** (hostname only), not the project URL or registration page. Press Enter to accept `https://gitlab.com/` — do not paste `https://gitlab.com/rmems/Dioscuri-Cloud` or the `glrt-...` token into the URL field.
+
 **Non-interactive register** (new `glrt-` token workflow — tags/run-untagged are set in GitLab UI, not CLI):
 
 ```bash

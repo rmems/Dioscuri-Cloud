@@ -1,16 +1,30 @@
 # Env: oracle-dev
 
-Oracle Cloud dev environment skeleton.
+Oracle Cloud dev environment for **hermes-rag** (RAG / MCP stack).
 
-HCP Terraform:
-- Organization: `Dioscuri-Cloud`
-- Workspace: `dioscuri-cloud-oracle-dev`
-- Working directory: `terraform/envs/oracle-dev`
+## Resources Managed
 
-TODO:
-- Define OCI provider configuration via HCP sensitive variables (see `docs/hcp/provider-variable-map.md`).
-- Implement `artifact_bucket` using OCI Object Storage.
-- Implement `service_account` using OCI IAM policies.
-- Add a `cost-ledger.md` row before any billable resource.
+- VCN + Subnet
+- Security List (SSH + Qdrant 6333 + MCP 8000)
+- Compute Instance (`VM.Standard.A1.Flex` – Always Free 4 OCPU / 24 GB)
+- Artifact bucket + service account (existing modules)
 
-CLI preflight: `providers/oracle/bootstrap.md`.
+## Required HCP Workspace Variables (sensitive)
+
+- `tenancy_ocid`
+- `user_ocid`
+- `fingerprint`
+- `private_key`
+- `compartment_ocid`
+- `availability_domain`
+- `ubuntu_image_id`
+- `ssh_public_key`
+
+## Usage
+
+```bash
+cd terraform/envs/oracle-dev
+terraform init
+terraform plan
+terraform apply
+```

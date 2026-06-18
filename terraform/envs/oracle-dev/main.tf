@@ -8,12 +8,27 @@ terraform {
   }
 }
 
+# Prefer var.region; fall back to var.location for backward compatibility with
+# HCP workspaces that only set OCI_LOCATION. var.region has no default so the
+# coalesce can detect whether it was explicitly set.
+locals {
+  effective_region = coalesce(var.region, var.location)
+  common_tags = {
+    owner       = "rmems"
+    project     = "hermes-rag"
+    env         = "dev"
+    issue       = "#48"
+    pr          = "#56"
+    teardown_by = "2026-07-10"
+  }
+}
+
 provider "oci" {
   tenancy_ocid = var.tenancy_ocid
   user_ocid    = var.user_ocid
   fingerprint  = var.fingerprint
   private_key  = var.private_key
-  region       = var.region
+  region       = local.effective_region
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -25,6 +40,7 @@ resource "oci_core_vcn" "hermes_rag" {
   display_name   = "hermes-rag-vcn"
   cidr_block     = "10.0.0.0/16"
   dns_label      = "hermesrag"
+  freeform_tags  = local.common_tags
 }
 
 resource "oci_core_subnet" "hermes_rag" {
@@ -36,6 +52,7 @@ resource "oci_core_subnet" "hermes_rag" {
   dns_label           = "hermesrag"
   security_list_ids   = [oci_core_security_list.hermes_rag.id]
   route_table_id      = oci_core_route_table.hermes_rag.id
+  freeform_tags       = local.common_tags
 }
 
 resource "oci_core_internet_gateway" "hermes_rag" {
@@ -43,12 +60,14 @@ resource "oci_core_internet_gateway" "hermes_rag" {
   vcn_id         = oci_core_vcn.hermes_rag.id
   display_name   = "hermes-rag-igw"
   enabled        = true
+  freeform_tags  = local.common_tags
 }
 
 resource "oci_core_route_table" "hermes_rag" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.hermes_rag.id
   display_name   = "hermes-rag-rt"
+  freeform_tags  = local.common_tags
 
   route_rules {
     destination       = "0.0.0.0/0"
@@ -62,6 +81,7 @@ resource "oci_core_security_list" "hermes_rag" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.hermes_rag.id
   display_name   = "hermes-rag-sl"
+  freeform_tags  = local.common_tags
 
   egress_security_rules {
     destination = "0.0.0.0/0"
@@ -125,8 +145,10 @@ resource "oci_core_instance" "hermes_rag" {
   }
 
   source_details {
-    source_type = "image"
-    source_id   = var.ubuntu_image_id
+    source_type                     = "image"
+    source_id                       = var.ubuntu_image_id
+    boot_volume_size_in_gbs         = 100
+    is_preserve_boot_volume_enabled = false
   }
 
   create_vnic_details {
@@ -138,10 +160,7 @@ resource "oci_core_instance" "hermes_rag" {
     ssh_authorized_keys = var.ssh_public_key
   }
 
-  freeform_tags = {
-    project = "hermes-rag"
-    env     = "dev"
-  }
+  freeform_tags = local.common_tags
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -151,7 +170,7 @@ resource "oci_core_instance" "hermes_rag" {
 module "artifacts" {
   source   = "../../modules/artifact_bucket"
   name     = var.artifact_bucket_name
-  location = var.region
+  location = local.effective_region
   labels   = { env = "dev" }
 }
 

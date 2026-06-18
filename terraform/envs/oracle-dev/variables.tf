@@ -23,9 +23,9 @@ variable "private_key" {
 }
 
 variable "region" {
-  description = "OCI Region"
+  description = "OCI Region (canonical). Required. Falls back to var.location for backward compatibility with HCP workspaces that set OCI_LOCATION."
   type        = string
-  default     = "us-phoenix-1"
+  default     = null
 }
 
 variable "compartment_ocid" {
@@ -47,17 +47,18 @@ variable "ubuntu_image_id" {
 variable "ssh_public_key" {
   description = "SSH public key content for the instance"
   type        = string
+  sensitive   = true
 }
 
 variable "operator_cidrs" {
-  description = "List of operator source CIDRs allowed to reach SSH/Qdrant/MCP. Replace with your own VPN/office CIDRs. Default is a non-routable example."
+  description = "List of operator source CIDRs allowed to reach SSH/Qdrant/MCP. REQUIRED: HCP workspaces must set this to the operator's actual VPN/office CIDRs (e.g. [\"203.0.113.0/24\"]); the default is a non-routable example and will not match real operator IPs."
   type        = list(string)
   default     = ["10.0.0.0/8"]
 }
 
 # Existing variables kept for compatibility
 variable "location" {
-  description = "Deprecated alias for var.region. Kept for backward compatibility with existing HCP workspace variables. Prefer var.region in new code."
+  description = "Deprecated alias for var.region. Kept for backward compatibility with existing HCP workspace variables that set OCI_LOCATION. Prefer var.region in new code."
   type        = string
   default     = "us-phoenix-1"
 }

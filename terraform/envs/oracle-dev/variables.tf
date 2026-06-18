@@ -56,7 +56,7 @@ variable "operator_cidrs" {
   default     = ["10.0.0.0/8"]
 
   validation {
-    condition     = !(length(var.operator_cidrs) == 1 && var.operator_cidrs[0] == "10.0.0.0/8")
+    condition     = length(var.operator_cidrs) > 0 && !contains(var.operator_cidrs, "10.0.0.0/8")
     error_message = "operator_cidrs must be set to real operator VPN/office CIDRs; the default 10.0.0.0/8 is a non-routable example and will lock out all access. See README.md for the full setup path."
   }
 }

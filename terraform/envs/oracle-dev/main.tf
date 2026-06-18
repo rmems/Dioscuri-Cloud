@@ -135,10 +135,11 @@ resource "oci_core_security_list" "hermes_rag" {
 # ─────────────────────────────────────────────────────────────
 
 resource "oci_core_instance" "hermes_rag" {
-  compartment_id      = var.compartment_ocid
-  availability_domain = var.availability_domain
-  display_name        = "hermes-rag"
-  shape               = "VM.Standard.A1.Flex"
+  compartment_id       = var.compartment_ocid
+  availability_domain  = var.availability_domain
+  display_name         = "hermes-rag"
+  shape                = "VM.Standard.A1.Flex"
+  preserve_boot_volume = false
 
   shape_config {
     ocpus         = 4

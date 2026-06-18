@@ -54,6 +54,11 @@ variable "operator_cidrs" {
   description = "List of operator source CIDRs allowed to reach SSH/Qdrant/MCP. REQUIRED: HCP workspaces must set this to the operator's actual VPN/office CIDRs (e.g. [\"203.0.113.0/24\"]); the default is a non-routable example and will not match real operator IPs."
   type        = list(string)
   default     = ["10.0.0.0/8"]
+
+  validation {
+    condition     = !(length(var.operator_cidrs) == 1 && var.operator_cidrs[0] == "10.0.0.0/8")
+    error_message = "operator_cidrs must be set to real operator VPN/office CIDRs; the default 10.0.0.0/8 is a non-routable example and will lock out all access. See README.md for the full setup path."
+  }
 }
 
 # Existing variables kept for compatibility

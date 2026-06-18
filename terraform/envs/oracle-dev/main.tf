@@ -35,6 +35,27 @@ resource "oci_core_subnet" "hermes_rag" {
   availability_domain = var.availability_domain
   dns_label           = "hermesrag"
   security_list_ids   = [oci_core_security_list.hermes_rag.id]
+  route_table_id      = oci_core_route_table.hermes_rag.id
+}
+
+resource "oci_core_internet_gateway" "hermes_rag" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.hermes_rag.id
+  display_name   = "hermes-rag-igw"
+  enabled        = true
+}
+
+resource "oci_core_route_table" "hermes_rag" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.hermes_rag.id
+  display_name   = "hermes-rag-rt"
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_internet_gateway.hermes_rag.id
+    description       = "Default route to Internet Gateway"
+  }
 }
 
 resource "oci_core_security_list" "hermes_rag" {
@@ -48,33 +69,42 @@ resource "oci_core_security_list" "hermes_rag" {
     description = "Allow all outbound"
   }
 
-  ingress_security_rules {
-    source      = "0.0.0.0/0"
-    protocol    = "6"
-    description = "SSH"
-    tcp_options {
-      max = 22
-      min = 22
+  dynamic "ingress_security_rules" {
+    for_each = var.operator_cidrs
+    content {
+      source      = ingress_security_rules.value
+      protocol    = "6"
+      description = "SSH (operator)"
+      tcp_options {
+        max = 22
+        min = 22
+      }
     }
   }
 
-  ingress_security_rules {
-    source      = "0.0.0.0/0"
-    protocol    = "6"
-    description = "Qdrant"
-    tcp_options {
-      max = 6333
-      min = 6333
+  dynamic "ingress_security_rules" {
+    for_each = var.operator_cidrs
+    content {
+      source      = ingress_security_rules.value
+      protocol    = "6"
+      description = "Qdrant (operator)"
+      tcp_options {
+        max = 6333
+        min = 6333
+      }
     }
   }
 
-  ingress_security_rules {
-    source      = "0.0.0.0/0"
-    protocol    = "6"
-    description = "MCP Server"
-    tcp_options {
-      max = 8000
-      min = 8000
+  dynamic "ingress_security_rules" {
+    for_each = var.operator_cidrs
+    content {
+      source      = ingress_security_rules.value
+      protocol    = "6"
+      description = "MCP Server (operator)"
+      tcp_options {
+        max = 8000
+        min = 8000
+      }
     }
   }
 }

@@ -49,9 +49,15 @@ variable "ssh_public_key" {
   type        = string
 }
 
+variable "operator_cidrs" {
+  description = "List of operator source CIDRs allowed to reach SSH/Qdrant/MCP. Replace with your own VPN/office CIDRs. Default is a non-routable example."
+  type        = list(string)
+  default     = ["10.0.0.0/8"]
+}
+
 # Existing variables kept for compatibility
 variable "location" {
-  description = "OCI region for artifacts."
+  description = "Deprecated alias for var.region. Kept for backward compatibility with existing HCP workspace variables. Prefer var.region in new code."
   type        = string
   default     = "us-phoenix-1"
 }

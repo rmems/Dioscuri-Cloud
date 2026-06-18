@@ -66,7 +66,6 @@ gitlab-duo-review:
   image: registry.gitlab.com/gitlab-org/duo-workflow-executor:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
   variables:
     GITLAB_TOKEN: $GITLAB_TOKEN
     DUO_WORKFLOW_TOKEN: $DUO_WORKFLOW_TOKEN
@@ -75,12 +74,16 @@ gitlab-duo-review:
       echo "🤖 GitLab Duo agent review started for MR !$CI_MERGE_REQUEST_IID"
       echo "Branch: $CI_COMMIT_REF_NAME"
       echo "Triggered by: $GITLAB_USER_LOGIN"
+      # Check required tokens upfront
+      if [ -z "$GITLAB_TOKEN" ] || [ -z "$DUO_WORKFLOW_TOKEN" ]; then
+        echo "Duo agent review skipped (GITLAB_TOKEN or DUO_WORKFLOW_TOKEN not configured)"
+        exit 0
+      fi
       # GitLab Duo agent scans the diff and posts an MR note.
       duo-workflow run \
         --target "review_terraform_changes" \
         --source-branch "$CI_COMMIT_REF_NAME" \
         --target-branch "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" \
-        --merge-request-id "$CI_MERGE_REQUEST_IID" \
-        || echo "Duo agent review skipped (token not configured)"
+        --merge-request-id "$CI_MERGE_REQUEST_IID"
   allow_failure: true
   when: manual

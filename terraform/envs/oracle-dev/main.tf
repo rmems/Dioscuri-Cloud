@@ -17,6 +17,7 @@ locals {
     owner       = "rmems"
     project     = "hermes-rag"
     env         = "dev"
+    linear      = "#48"
     issue       = "#48"
     pr          = "#56"
     teardown_by = "2026-07-10"

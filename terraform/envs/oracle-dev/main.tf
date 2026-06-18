@@ -9,11 +9,11 @@ terraform {
 }
 
 provider "oci" {
-  tenancy_ocid     = var.tenancy_ocid
-  user_ocid        = var.user_ocid
-  fingerprint      = var.fingerprint
-  private_key      = var.private_key
-  region           = var.region
+  tenancy_ocid = var.tenancy_ocid
+  user_ocid    = var.user_ocid
+  fingerprint  = var.fingerprint
+  private_key  = var.private_key
+  region       = var.region
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -28,13 +28,13 @@ resource "oci_core_vcn" "hermes_rag" {
 }
 
 resource "oci_core_subnet" "hermes_rag" {
-  compartment_id    = var.compartment_ocid
-  vcn_id            = oci_core_vcn.hermes_rag.id
-  display_name      = "hermes-rag-subnet"
-  cidr_block        = "10.0.1.0/24"
+  compartment_id      = var.compartment_ocid
+  vcn_id              = oci_core_vcn.hermes_rag.id
+  display_name        = "hermes-rag-subnet"
+  cidr_block          = "10.0.1.0/24"
   availability_domain = var.availability_domain
-  dns_label         = "hermesrag"
-  security_list_ids = [oci_core_security_list.hermes_rag.id]
+  dns_label           = "hermesrag"
+  security_list_ids   = [oci_core_security_list.hermes_rag.id]
 }
 
 resource "oci_core_security_list" "hermes_rag" {
@@ -119,10 +119,10 @@ resource "oci_core_instance" "hermes_rag" {
 # ─────────────────────────────────────────────────────────────
 
 module "artifacts" {
-  source = "../../modules/artifact_bucket"
+  source   = "../../modules/artifact_bucket"
   name     = var.artifact_bucket_name
   location = var.region
-  labels = { env = "dev" }
+  labels   = { env = "dev" }
 }
 
 module "artifact_sa" {

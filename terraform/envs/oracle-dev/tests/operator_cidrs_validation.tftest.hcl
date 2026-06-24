@@ -16,7 +16,7 @@ variables {
   tenancy_ocid        = "ocid1.tenancy.oc1..aaaaatest"
   user_ocid           = "ocid1.user.oc1..aaaaatest"
   fingerprint         = "aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99"
-  private_key         = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAtest\n-----END RSA PRIVATE KEY-----"
+  private_key         = "REDACTED_TEST_PRIVATE_KEY_MATERIAL_ONLY_NOT_A_REAL_PEM"
   compartment_ocid    = "ocid1.compartment.oc1..aaaaatest"
   availability_domain = "MQUI:PHX-AD-1"
   ubuntu_image_id     = "ocid1.image.oc1.phx.aaaaatest"

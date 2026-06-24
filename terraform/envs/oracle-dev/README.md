@@ -19,7 +19,7 @@ Oracle Cloud dev environment for **hermes-rag** (RAG / MCP stack).
 - `availability_domain`
 - `ubuntu_image_id`
 - `ssh_public_key`
-- **`operator_cidrs`** (list of strings) — must be set to the operator's actual VPN/office CIDRs; the default `["10.0.0.0/8"]` is a non-routable example and will not match real public IPs. **In HCP Terraform, mark this variable as HCL** (or pass it as a JSON list literal) so type conversion succeeds. A `validation` block in `variables.tf` will reject the dummy default `10.0.0.0/8` if the workspace variable is not overridden.
+- **`operator_cidrs`** (list of strings) — must be set to the operator's actual VPN/office CIDRs; the default `["10.0.0.0/8"]` is a non-routable example and will not match real public IPs. **In HCP Terraform, you MUST enable the "HCL" checkbox** when setting this variable (even if you paste a JSON-looking array like `["203.0.113.0/24"]`). Without the HCL flag, the value is stored and passed as a plain string instead of a list, and Terraform type conversion fails before any plan or validation runs. A `validation` block in `variables.tf` will reject the dummy default `10.0.0.0/8` (or any list containing it, or empty lists) if the workspace variable is not overridden with a real value.
 
 ## Usage
 

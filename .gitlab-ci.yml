@@ -1,5 +1,7 @@
-# GitLab CI (secondary) — experimental local-runner validation.
+# GitLab CI (secondary) — runs on the GitLab runner (#53546268).
 # GitHub Actions remains the primary merge gate.
+#
+# Issue: #55 — GitLab secondary CI workflow (GitLab runner + MCP + LSP)
 
 workflow:
   rules:
@@ -8,9 +10,14 @@ workflow:
 
 stages:
   - validate
+  - duo-review
 
 variables:
   TF_VERSION: "1.10.5"
+
+# ─────────────────────────────────────────────────────────────────
+# Stage 1: Terraform fmt + validate (mirror of GitHub Actions)
+# ─────────────────────────────────────────────────────────────────
 
 terraform-fmt:
   stage: validate
@@ -47,3 +54,36 @@ terraform-validate:
     - terraform -chdir=terraform/envs/oracle-dev validate
     - terraform -chdir=terraform/envs/ibm-dev init -backend=false
     - terraform -chdir=terraform/envs/ibm-dev validate
+
+# ─────────────────────────────────────────────────────────────────
+# Stage 2: GitLab Duo agent review (uses the 9-day Duo free-trial quota)
+#   Only runs on merge-request pipelines. Provides a second-opinion
+#   AI code review on top of the existing GitHub-side bots.
+# ─────────────────────────────────────────────────────────────────
+
+gitlab-duo-review:
+  stage: duo-review
+  image: registry.gitlab.com/gitlab-org/duo-workflow-executor:latest
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    GITLAB_TOKEN: $GITLAB_TOKEN
+    DUO_WORKFLOW_TOKEN: $DUO_WORKFLOW_TOKEN
+  script:
+    - |
+      echo "🤖 GitLab Duo agent review started for MR !$CI_MERGE_REQUEST_IID"
+      echo "Branch: $CI_COMMIT_REF_NAME"
+      echo "Triggered by: $GITLAB_USER_LOGIN"
+      # Check required tokens upfront
+      if [ -z "$GITLAB_TOKEN" ] || [ -z "$DUO_WORKFLOW_TOKEN" ]; then
+        echo "Duo agent review skipped (GITLAB_TOKEN or DUO_WORKFLOW_TOKEN not configured)"
+        exit 0
+      fi
+      # GitLab Duo agent scans the diff and posts an MR note.
+      duo-workflow run \
+        --target "review_terraform_changes" \
+        --source-branch "$CI_COMMIT_REF_NAME" \
+        --target-branch "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" \
+        --merge-request-id "$CI_MERGE_REQUEST_IID"
+  allow_failure: true
+  when: manual

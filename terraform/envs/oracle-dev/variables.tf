@@ -51,9 +51,14 @@ variable "ssh_public_key" {
 }
 
 variable "operator_cidrs" {
-  description = "List of operator source CIDRs allowed to reach SSH/Qdrant/MCP. REQUIRED: HCP workspaces must set this to the operator's actual VPN/office CIDRs (e.g. [\"203.0.113.0/24\"]); the default is a non-routable example and will not match real operator IPs."
+  description = "List of operator source CIDRs allowed to reach SSH/Qdrant/MCP. REQUIRED: HCP workspaces must set this to the operator's actual VPN/office CIDRs (e.g. [\"203.0.113.0/24\"]); the default is a non-routable example and will not match real operator IPs. In HCP Terraform the variable must be marked HCL (see README.md)."
   type        = list(string)
   default     = ["10.0.0.0/8"]
+
+  validation {
+    condition     = length(var.operator_cidrs) > 0 && !contains(var.operator_cidrs, "10.0.0.0/8")
+    error_message = "operator_cidrs must be set to real operator VPN/office CIDRs; the default 10.0.0.0/8 is a non-routable example and will lock out all access. See README.md for the full setup path."
+  }
 }
 
 # Existing variables kept for compatibility

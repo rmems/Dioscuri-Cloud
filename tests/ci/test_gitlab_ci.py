@@ -116,7 +116,8 @@ class TestGitlabDuoReviewJob(unittest.TestCase):
             'CI_PIPELINE_SOURCE == "merge_request_event"',
             mr_rule.get("if", ""),
         )
-        self.assertEqual(mr_rule.get("when"), "always")
+        # "when" is set at the job level (see test_job_when_is_manual), not inside the rule
+        self.assertIsNone(mr_rule.get("when"))
 
     def test_job_references_gitlab_token_variable(self):
         job_vars = self.job.get("variables", {})

@@ -166,6 +166,131 @@ resource "oci_core_instance" "hermes_rag" {
 }
 
 # ─────────────────────────────────────────────────────────────
+# Credit Burn Resources (VM.Standard.E5.Flex, expires 2026-06-28)
+# ─────────────────────────────────────────────────────────────
+
+locals {
+  burn_tags = merge(local.common_tags, {
+    purpose     = "credit-burn"
+    teardown_by = "2026-06-28"
+  })
+}
+
+resource "oci_core_vcn" "burn" {
+  compartment_id = var.compartment_ocid
+  display_name   = "burn-vcn"
+  cidr_block     = "10.1.0.0/16"
+  dns_label      = "burn"
+  freeform_tags  = local.burn_tags
+}
+
+resource "oci_core_subnet" "burn" {
+  compartment_id      = var.compartment_ocid
+  vcn_id              = oci_core_vcn.burn.id
+  display_name        = "burn-subnet"
+  cidr_block          = "10.1.1.0/24"
+  availability_domain = var.availability_domain
+  dns_label           = "burn"
+  security_list_ids   = [oci_core_security_list.burn.id]
+  route_table_id      = oci_core_route_table.burn.id
+  freeform_tags       = local.burn_tags
+}
+
+resource "oci_core_internet_gateway" "burn" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.burn.id
+  display_name   = "burn-igw"
+  enabled        = true
+  freeform_tags  = local.burn_tags
+}
+
+resource "oci_core_route_table" "burn" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.burn.id
+  display_name   = "burn-rt"
+  freeform_tags  = local.burn_tags
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_internet_gateway.burn.id
+    description       = "Default route to Internet Gateway"
+  }
+}
+
+resource "oci_core_security_list" "burn" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.burn.id
+  display_name   = "burn-sl"
+  freeform_tags  = local.burn_tags
+
+  egress_security_rules {
+    destination = "0.0.0.0/0"
+    protocol    = "all"
+    description = "Allow all outbound"
+  }
+
+  dynamic "ingress_security_rules" {
+    for_each = var.operator_cidrs
+    content {
+      source      = ingress_security_rules.value
+      protocol    = "6"
+      description = "SSH (operator)"
+      tcp_options {
+        max = 22
+        min = 22
+      }
+    }
+  }
+}
+
+resource "oci_core_instance" "burn" {
+  compartment_id       = var.compartment_ocid
+  availability_domain  = var.availability_domain
+  display_name         = "burn-e5-flex"
+  shape                = "VM.Standard.E5.Flex"
+  preserve_boot_volume = false
+
+  shape_config {
+    ocpus         = 64
+    memory_in_gbs = 1024
+  }
+
+  source_details {
+    source_type             = "image"
+    source_id               = var.ubuntu_x86_image_id
+    boot_volume_size_in_gbs = 500
+  }
+
+  create_vnic_details {
+    subnet_id        = oci_core_subnet.burn.id
+    assign_public_ip = true
+  }
+
+  metadata = {
+    ssh_authorized_keys = var.ssh_public_key
+  }
+
+  freeform_tags = local.burn_tags
+}
+
+resource "oci_core_volume" "burn" {
+  compartment_id      = var.compartment_ocid
+  availability_domain = var.availability_domain
+  display_name        = "burn-volume-2tb"
+  size_in_gbs         = 2048
+  vpus_per_gb         = 20
+  freeform_tags       = local.burn_tags
+}
+
+resource "oci_core_volume_attachment" "burn" {
+  attachment_type = "paravirtualized"
+  instance_id     = oci_core_instance.burn.id
+  volume_id       = oci_core_volume.burn.id
+  display_name    = "burn-volume-attachment"
+}
+
+# ─────────────────────────────────────────────────────────────
 # Existing modules (kept for now)
 # ─────────────────────────────────────────────────────────────
 

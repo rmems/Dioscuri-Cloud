@@ -40,7 +40,12 @@ variable "availability_domain" {
 }
 
 variable "ubuntu_image_id" {
-  description = "Ubuntu 24.04 ARM image OCID"
+  description = "Ubuntu 24.04 ARM image OCID (used by hermes-rag A1.Flex)"
+  type        = string
+}
+
+variable "ubuntu_x86_image_id" {
+  description = "Ubuntu 24.04 x86_64 (AMD64) image OCID (used by E5.Flex credit-burn instance)"
   type        = string
 }
 

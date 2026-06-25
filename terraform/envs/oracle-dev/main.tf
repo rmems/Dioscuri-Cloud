@@ -257,10 +257,9 @@ resource "oci_core_instance" "burn" {
   }
 
   source_details {
-    source_type                     = "image"
-    source_id                       = var.ubuntu_image_id
-    boot_volume_size_in_gbs         = 500
-    is_preserve_boot_volume_enabled = false
+    source_type             = "image"
+    source_id               = var.ubuntu_x86_image_id
+    boot_volume_size_in_gbs = 500
   }
 
   create_vnic_details {

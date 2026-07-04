@@ -19,6 +19,7 @@ variables {
   compartment_ocid    = "ocid1.compartment.oc1..aaaaatest"
   availability_domain = "MQUI:PHX-AD-1"
   ubuntu_image_id     = "ocid1.image.oc1.phx.aaaaatest"
+  ubuntu_x86_image_id = "ocid1.image.oc1.phx.aaaaatest-x86"
   ssh_public_key      = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAA test@host"
   operator_cidrs      = ["203.0.113.0/24"]
 }

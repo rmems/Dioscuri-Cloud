@@ -49,6 +49,12 @@ variable "ubuntu_x86_image_id" {
   type        = string
 }
 
+variable "burn_instance_count" {
+  description = "Number of maxed-out VM.Standard.E5.Flex instances (and matching 2TB volumes) to launch for credit burn. >1 enables concurrent burn per issue #63."
+  type        = number
+  default     = 2
+}
+
 variable "ssh_public_key" {
   description = "SSH public key content for the instance"
   type        = string

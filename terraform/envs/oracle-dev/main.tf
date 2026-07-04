@@ -147,10 +147,9 @@ resource "oci_core_instance" "hermes_rag" {
   }
 
   source_details {
-    source_type                     = "image"
-    source_id                       = var.ubuntu_image_id
-    boot_volume_size_in_gbs         = 100
-    is_preserve_boot_volume_enabled = false
+    source_type             = "image"
+    source_id               = var.ubuntu_image_id
+    boot_volume_size_in_gbs = 100
   }
 
   create_vnic_details {
@@ -173,6 +172,9 @@ locals {
   burn_tags = merge(local.common_tags, {
     purpose     = "credit-burn"
     teardown_by = "2026-06-28"
+    linear      = "#63"
+    issue       = "#63"
+    pr          = "#64"
   })
 }
 
@@ -242,18 +244,53 @@ resource "oci_core_security_list" "burn" {
       }
     }
   }
+
+  dynamic "ingress_security_rules" {
+    for_each = var.operator_cidrs
+    content {
+      source      = ingress_security_rules.value
+      protocol    = "6"
+      description = "Qdrant (operator)"
+      tcp_options {
+        max = 6333
+        min = 6333
+      }
+    }
+  }
+
+  dynamic "ingress_security_rules" {
+    for_each = var.operator_cidrs
+    content {
+      source      = ingress_security_rules.value
+      protocol    = "6"
+      description = "MCP Server (operator)"
+      tcp_options {
+        max = 8000
+        min = 8000
+      }
+    }
+  }
 }
 
 resource "oci_core_instance" "burn" {
+  count                = var.burn_instance_count
   compartment_id       = var.compartment_ocid
   availability_domain  = var.availability_domain
-  display_name         = "burn-e5-flex"
+  display_name         = "burn-e5-flex-${count.index}"
   shape                = "VM.Standard.E5.Flex"
   preserve_boot_volume = false
 
   shape_config {
     ocpus         = 64
     memory_in_gbs = 1024
+  }
+
+  launch_options {
+    is_pv_encryption_in_transit_enabled = true
+  }
+
+  instance_options {
+    are_legacy_imds_endpoints_disabled = true
   }
 
   source_details {
@@ -275,19 +312,21 @@ resource "oci_core_instance" "burn" {
 }
 
 resource "oci_core_volume" "burn" {
+  count               = var.burn_instance_count
   compartment_id      = var.compartment_ocid
   availability_domain = var.availability_domain
-  display_name        = "burn-volume-2tb"
+  display_name        = "burn-volume-2tb-${count.index}"
   size_in_gbs         = 2048
   vpus_per_gb         = 20
   freeform_tags       = local.burn_tags
 }
 
 resource "oci_core_volume_attachment" "burn" {
+  count           = var.burn_instance_count
   attachment_type = "paravirtualized"
-  instance_id     = oci_core_instance.burn.id
-  volume_id       = oci_core_volume.burn.id
-  display_name    = "burn-volume-attachment"
+  instance_id     = oci_core_instance.burn[count.index].id
+  volume_id       = oci_core_volume.burn[count.index].id
+  display_name    = "burn-volume-attachment-${count.index}"
 }
 
 # ─────────────────────────────────────────────────────────────

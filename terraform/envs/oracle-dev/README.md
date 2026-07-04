@@ -7,6 +7,7 @@ Oracle Cloud dev environment for **hermes-rag** (RAG / MCP stack).
 - VCN + Subnet + Internet Gateway + Route Table
 - Security List with restricted ingress (SSH + Qdrant 6333 + MCP 8000 from `var.operator_cidrs`)
 - Compute Instance (`VM.Standard.A1.Flex` – Always Free 4 OCPU / 24 GB, 100 GB boot volume)
+- Credit-burn stack: multiple `VM.Standard.E5.Flex` (64 OCPU / 1024 GB) instances + 2 TB high-perf block volumes (controlled by `var.burn_instance_count`, default 2) in a dedicated VCN for rapid promo credit spend (see issue #63)
 - Artifact bucket + service account (existing modules)
 
 ## Required HCP Workspace Variables (sensitive)
@@ -18,6 +19,7 @@ Oracle Cloud dev environment for **hermes-rag** (RAG / MCP stack).
 - `compartment_ocid`
 - `availability_domain`
 - `ubuntu_image_id`
+- `ubuntu_x86_image_id` (Ubuntu 24.04 x86_64 image OCID for E5.Flex credit-burn instances)
 - `ssh_public_key`
 - **`operator_cidrs`** (list of strings) — must be set to the operator's actual VPN/office CIDRs; the default `["10.0.0.0/8"]` is a non-routable example and will not match real public IPs. **In HCP Terraform, you MUST enable the "HCL" checkbox** when setting this variable (even if you paste a JSON-looking array like `["203.0.113.0/24"]`). Without the HCL flag, the value is stored and passed as a plain string instead of a list, and Terraform type conversion fails before any plan or validation runs. A `validation` block in `variables.tf` will reject the dummy default `10.0.0.0/8` (or any list containing it, or empty lists) if the workspace variable is not overridden with a real value.
 

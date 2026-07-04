@@ -146,6 +146,14 @@ resource "oci_core_instance" "hermes_rag" {
     memory_in_gbs = 24
   }
 
+  launch_options {
+    is_pv_encryption_in_transit_enabled = true
+  }
+
+  instance_options {
+    are_legacy_imds_endpoints_disabled = true
+  }
+
   source_details {
     source_type             = "image"
     source_id               = var.ubuntu_image_id
@@ -322,11 +330,12 @@ resource "oci_core_volume" "burn" {
 }
 
 resource "oci_core_volume_attachment" "burn" {
-  count           = var.burn_instance_count
-  attachment_type = "paravirtualized"
-  instance_id     = oci_core_instance.burn[count.index].id
-  volume_id       = oci_core_volume.burn[count.index].id
-  display_name    = "burn-volume-attachment-${count.index}"
+  count                               = var.burn_instance_count
+  attachment_type                     = "paravirtualized"
+  instance_id                         = oci_core_instance.burn[count.index].id
+  volume_id                           = oci_core_volume.burn[count.index].id
+  display_name                        = "burn-volume-attachment-${count.index}"
+  is_pv_encryption_in_transit_enabled = true
 }
 
 # ─────────────────────────────────────────────────────────────

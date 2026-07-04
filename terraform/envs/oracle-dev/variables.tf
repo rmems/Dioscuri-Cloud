@@ -53,6 +53,11 @@ variable "burn_instance_count" {
   description = "Number of maxed-out VM.Standard.E5.Flex instances (and matching 2TB volumes) to launch for credit burn. >1 enables concurrent burn per issue #63."
   type        = number
   default     = 2
+
+  validation {
+    condition     = var.burn_instance_count >= 1 && var.burn_instance_count <= 4
+    error_message = "burn_instance_count must be between 1 and 4 (safety bound for expensive credit-burn instances)."
+  }
 }
 
 variable "ssh_public_key" {

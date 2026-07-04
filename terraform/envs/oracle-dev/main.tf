@@ -146,14 +146,6 @@ resource "oci_core_instance" "hermes_rag" {
     memory_in_gbs = 24
   }
 
-  launch_options {
-    is_pv_encryption_in_transit_enabled = true
-  }
-
-  instance_options {
-    are_legacy_imds_endpoints_disabled = true
-  }
-
   source_details {
     source_type             = "image"
     source_id               = var.ubuntu_image_id
@@ -187,51 +179,56 @@ locals {
 }
 
 resource "oci_core_vcn" "burn" {
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  display_name   = "burn-vcn"
+  display_name   = "burn-vcn-${count.index}"
   cidr_block     = "10.1.0.0/16"
   dns_label      = "burn"
   freeform_tags  = local.burn_tags
 }
 
 resource "oci_core_subnet" "burn" {
+  count               = var.burn_instance_count
   compartment_id      = var.compartment_ocid
-  vcn_id              = oci_core_vcn.burn.id
-  display_name        = "burn-subnet"
+  vcn_id              = oci_core_vcn.burn[count.index].id
+  display_name        = "burn-subnet-${count.index}"
   cidr_block          = "10.1.1.0/24"
   availability_domain = var.availability_domain
   dns_label           = "burn"
-  security_list_ids   = [oci_core_security_list.burn.id]
-  route_table_id      = oci_core_route_table.burn.id
+  security_list_ids   = [oci_core_security_list.burn[count.index].id]
+  route_table_id      = oci_core_route_table.burn[count.index].id
   freeform_tags       = local.burn_tags
 }
 
 resource "oci_core_internet_gateway" "burn" {
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.burn.id
-  display_name   = "burn-igw"
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-igw-${count.index}"
   enabled        = true
   freeform_tags  = local.burn_tags
 }
 
 resource "oci_core_route_table" "burn" {
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.burn.id
-  display_name   = "burn-rt"
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-rt-${count.index}"
   freeform_tags  = local.burn_tags
 
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
-    network_entity_id = oci_core_internet_gateway.burn.id
+    network_entity_id = oci_core_internet_gateway.burn[count.index].id
     description       = "Default route to Internet Gateway"
   }
 }
 
 resource "oci_core_security_list" "burn" {
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.burn.id
-  display_name   = "burn-sl"
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-sl-${count.index}"
   freeform_tags  = local.burn_tags
 
   egress_security_rules {
@@ -249,32 +246,6 @@ resource "oci_core_security_list" "burn" {
       tcp_options {
         max = 22
         min = 22
-      }
-    }
-  }
-
-  dynamic "ingress_security_rules" {
-    for_each = var.operator_cidrs
-    content {
-      source      = ingress_security_rules.value
-      protocol    = "6"
-      description = "Qdrant (operator)"
-      tcp_options {
-        max = 6333
-        min = 6333
-      }
-    }
-  }
-
-  dynamic "ingress_security_rules" {
-    for_each = var.operator_cidrs
-    content {
-      source      = ingress_security_rules.value
-      protocol    = "6"
-      description = "MCP Server (operator)"
-      tcp_options {
-        max = 8000
-        min = 8000
       }
     }
   }
@@ -308,7 +279,7 @@ resource "oci_core_instance" "burn" {
   }
 
   create_vnic_details {
-    subnet_id        = oci_core_subnet.burn.id
+    subnet_id        = oci_core_subnet.burn[count.index].id
     assign_public_ip = true
   }
 

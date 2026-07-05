@@ -50,9 +50,9 @@ variable "ubuntu_x86_image_id" {
 }
 
 variable "burn_instance_count" {
-  description = "Number of maxed-out VM.Standard.E5.Flex instances (and matching 2TB volumes) to launch for credit burn. >1 enables concurrent burn per issue #63. Set to 0 to disable the burn stack entirely (useful for teardown via workspace variable)."
+  description = "Number of maxed-out VM.Standard.E5.Flex instances (and matching 2TB volumes) to launch for credit burn. Defaults to 0 (disabled) for safety. Set >0 explicitly to enable. >1 enables concurrent burn per issue #63. Set to 0 to disable the burn stack entirely (useful for teardown via workspace variable)."
   type        = number
-  default     = 2
+  default     = 0
 
   validation {
     condition     = var.burn_instance_count >= 0 && var.burn_instance_count <= 4

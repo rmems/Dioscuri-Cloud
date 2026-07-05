@@ -54,6 +54,10 @@ variable "burn_instance_count" {
   type        = number
   default     = 0
 
+  # SAFETY: default 0 prevents accidental expensive provisioning on plain `terraform apply`.
+  # The burn stack is intentionally high-cost (64 OCPU / 1TB RAM + 2TB volume per instance).
+  # Always override explicitly in the workspace or CLI when intending to burn.
+
   validation {
     condition     = var.burn_instance_count >= 0 && var.burn_instance_count <= 4
     error_message = "burn_instance_count must be between 0 and 4 (0 disables the burn stack; safety bound for expensive instances)."

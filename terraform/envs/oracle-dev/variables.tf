@@ -40,8 +40,28 @@ variable "availability_domain" {
 }
 
 variable "ubuntu_image_id" {
-  description = "Ubuntu 24.04 ARM image OCID"
+  description = "Ubuntu 24.04 ARM image OCID (used by hermes-rag A1.Flex)"
   type        = string
+}
+
+variable "ubuntu_x86_image_id" {
+  description = "Ubuntu 24.04 x86_64 (AMD64) image OCID (used by E5.Flex credit-burn instance)"
+  type        = string
+}
+
+variable "burn_instance_count" {
+  description = "Number of maxed-out VM.Standard.E5.Flex instances (and matching 2TB volumes) to launch for credit burn. Defaults to 0 (disabled) for safety. Set >0 explicitly to enable. >1 enables concurrent burn per issue #63. Set to 0 to disable the burn stack entirely (useful for teardown via workspace variable)."
+  type        = number
+  default     = 0
+
+  # SAFETY: default 0 prevents accidental expensive provisioning on plain `terraform apply`.
+  # The burn stack is intentionally high-cost (64 OCPU / 1TB RAM + 2TB volume per instance).
+  # Always override explicitly in the workspace or CLI when intending to burn.
+
+  validation {
+    condition     = var.burn_instance_count >= 0 && var.burn_instance_count <= 4
+    error_message = "burn_instance_count must be between 0 and 4 (0 disables the burn stack; safety bound for expensive instances)."
+  }
 }
 
 variable "ssh_public_key" {

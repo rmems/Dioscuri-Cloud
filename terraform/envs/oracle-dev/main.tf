@@ -147,10 +147,9 @@ resource "oci_core_instance" "hermes_rag" {
   }
 
   source_details {
-    source_type                     = "image"
-    source_id                       = var.ubuntu_image_id
-    boot_volume_size_in_gbs         = 100
-    is_preserve_boot_volume_enabled = false
+    source_type             = "image"
+    source_id               = var.ubuntu_image_id
+    boot_volume_size_in_gbs = 100
   }
 
   create_vnic_details {
@@ -163,6 +162,151 @@ resource "oci_core_instance" "hermes_rag" {
   }
 
   freeform_tags = local.common_tags
+}
+
+# ─────────────────────────────────────────────────────────────
+# Credit Burn Resources (VM.Standard.E5.Flex, expires 2026-06-28)
+# ─────────────────────────────────────────────────────────────
+
+locals {
+  burn_tags = merge(local.common_tags, {
+    purpose     = "credit-burn"
+    teardown_by = "2026-06-28"
+    linear      = "#63"
+    issue       = "#63"
+    pr          = "#64"
+  })
+}
+
+resource "oci_core_vcn" "burn" {
+  count          = var.burn_instance_count
+  compartment_id = var.compartment_ocid
+  display_name   = "burn-vcn-${count.index}"
+  cidr_block     = "10.1.0.0/16"
+  dns_label      = "burn"
+  freeform_tags  = local.burn_tags
+}
+
+resource "oci_core_subnet" "burn" {
+  count               = var.burn_instance_count
+  compartment_id      = var.compartment_ocid
+  vcn_id              = oci_core_vcn.burn[count.index].id
+  display_name        = "burn-subnet-${count.index}"
+  cidr_block          = "10.1.1.0/24"
+  availability_domain = var.availability_domain
+  dns_label           = "burn"
+  security_list_ids   = [oci_core_security_list.burn[count.index].id]
+  route_table_id      = oci_core_route_table.burn[count.index].id
+  freeform_tags       = local.burn_tags
+}
+
+resource "oci_core_internet_gateway" "burn" {
+  count          = var.burn_instance_count
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-igw-${count.index}"
+  enabled        = true
+  freeform_tags  = local.burn_tags
+}
+
+resource "oci_core_route_table" "burn" {
+  count          = var.burn_instance_count
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-rt-${count.index}"
+  freeform_tags  = local.burn_tags
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_internet_gateway.burn[count.index].id
+    description       = "Default route to Internet Gateway"
+  }
+}
+
+resource "oci_core_security_list" "burn" {
+  count          = var.burn_instance_count
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-sl-${count.index}"
+  freeform_tags  = local.burn_tags
+
+  egress_security_rules {
+    destination = "0.0.0.0/0"
+    protocol    = "all"
+    description = "Allow all outbound"
+  }
+
+  dynamic "ingress_security_rules" {
+    for_each = var.operator_cidrs
+    content {
+      source      = ingress_security_rules.value
+      protocol    = "6"
+      description = "SSH (operator)"
+      tcp_options {
+        max = 22
+        min = 22
+      }
+    }
+  }
+}
+
+resource "oci_core_instance" "burn" {
+  count                = var.burn_instance_count
+  compartment_id       = var.compartment_ocid
+  availability_domain  = var.availability_domain
+  display_name         = "burn-e5-flex-${count.index}"
+  shape                = "VM.Standard.E5.Flex"
+  preserve_boot_volume = false
+
+  shape_config {
+    ocpus         = 64
+    memory_in_gbs = 1024
+  }
+
+  launch_options {
+    is_pv_encryption_in_transit_enabled = true
+  }
+
+  instance_options {
+    are_legacy_imds_endpoints_disabled = true
+  }
+
+  source_details {
+    source_type             = "image"
+    source_id               = var.ubuntu_x86_image_id
+    boot_volume_size_in_gbs = 500
+  }
+
+  create_vnic_details {
+    subnet_id        = oci_core_subnet.burn[count.index].id
+    assign_public_ip = true
+  }
+
+  metadata = {
+    ssh_authorized_keys = var.ssh_public_key
+  }
+
+  freeform_tags = local.burn_tags
+}
+
+resource "oci_core_volume" "burn" {
+  count               = var.burn_instance_count
+  compartment_id      = var.compartment_ocid
+  availability_domain = var.availability_domain
+  display_name        = "burn-volume-2tb-${count.index}"
+  size_in_gbs         = 2048
+  vpus_per_gb         = 20
+  freeform_tags       = local.burn_tags
+}
+
+resource "oci_core_volume_attachment" "burn" {
+  count                               = var.burn_instance_count
+  attachment_type                     = "paravirtualized"
+  instance_id                         = oci_core_instance.burn[count.index].id
+  volume_id                           = oci_core_volume.burn[count.index].id
+  display_name                        = "burn-volume-attachment-${count.index}"
+  is_pv_encryption_in_transit_enabled = true
 }
 
 # ─────────────────────────────────────────────────────────────

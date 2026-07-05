@@ -183,7 +183,7 @@ resource "oci_core_vcn" "burn" {
   compartment_id = var.compartment_ocid
   display_name   = "burn-vcn-${count.index}"
   cidr_block     = "10.1.0.0/16"
-  dns_label      = "burn"
+  dns_label      = "burn${count.index}"
   freeform_tags  = local.burn_tags
 }
 

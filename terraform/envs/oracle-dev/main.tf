@@ -179,56 +179,56 @@ locals {
 }
 
 resource "oci_core_vcn" "burn" {
-  count          = var.burn_instance_count > 0 ? 1 : 0
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  display_name   = "burn-vcn"
+  display_name   = "burn-vcn-${count.index}"
   cidr_block     = "10.1.0.0/16"
   dns_label      = "burn"
   freeform_tags  = local.burn_tags
 }
 
 resource "oci_core_subnet" "burn" {
-  count               = var.burn_instance_count > 0 ? 1 : 0
+  count               = var.burn_instance_count
   compartment_id      = var.compartment_ocid
-  vcn_id              = oci_core_vcn.burn[0].id
-  display_name        = "burn-subnet"
+  vcn_id              = oci_core_vcn.burn[count.index].id
+  display_name        = "burn-subnet-${count.index}"
   cidr_block          = "10.1.1.0/24"
   availability_domain = var.availability_domain
   dns_label           = "burn"
-  security_list_ids   = [oci_core_security_list.burn[0].id]
-  route_table_id      = oci_core_route_table.burn[0].id
+  security_list_ids   = [oci_core_security_list.burn[count.index].id]
+  route_table_id      = oci_core_route_table.burn[count.index].id
   freeform_tags       = local.burn_tags
 }
 
 resource "oci_core_internet_gateway" "burn" {
-  count          = var.burn_instance_count > 0 ? 1 : 0
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.burn[0].id
-  display_name   = "burn-igw"
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-igw-${count.index}"
   enabled        = true
   freeform_tags  = local.burn_tags
 }
 
 resource "oci_core_route_table" "burn" {
-  count          = var.burn_instance_count > 0 ? 1 : 0
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.burn[0].id
-  display_name   = "burn-rt"
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-rt-${count.index}"
   freeform_tags  = local.burn_tags
 
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
-    network_entity_id = oci_core_internet_gateway.burn[0].id
+    network_entity_id = oci_core_internet_gateway.burn[count.index].id
     description       = "Default route to Internet Gateway"
   }
 }
 
 resource "oci_core_security_list" "burn" {
-  count          = var.burn_instance_count > 0 ? 1 : 0
+  count          = var.burn_instance_count
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.burn[0].id
-  display_name   = "burn-sl"
+  vcn_id         = oci_core_vcn.burn[count.index].id
+  display_name   = "burn-sl-${count.index}"
   freeform_tags  = local.burn_tags
 
   egress_security_rules {
@@ -279,7 +279,7 @@ resource "oci_core_instance" "burn" {
   }
 
   create_vnic_details {
-    subnet_id        = oci_core_subnet.burn[0].id
+    subnet_id        = oci_core_subnet.burn[count.index].id
     assign_public_ip = true
   }
 

@@ -42,6 +42,19 @@ These fields are not core-required for every run today, but they should be popul
 | `linear_issue` | string | Linear identifier or URL, e.g. `MET-14`. |
 | `github_issue` | string | GitHub issue URL or `owner/repo#number`. |
 
+## Training job fields (GitHub #52)
+
+Populate when `job_type` is `training` (see `examples/training-run-manifest.synthetic.json`):
+
+| Field | Type | Description |
+|---|---|---|
+| `job_type` | string | Set to `training` for fine-tune/SFT/train smokes (omit or `inference` for legacy SAAQ smoke metadata). |
+| `base_model` | string | Base model identifier or HF slug used for the job. |
+| `trainer` | string | Trainer stack, e.g. `sagemaker`, `pytorch-ddp`, `agoge-forger`. |
+| `steps` | integer | Training steps completed or configured. |
+| `dataset_uri` | string | URI to dataset manifest or prefix in the training bucket. |
+| `checkpoint_uri` | string | URI prefix for checkpoints written by the job. |
+
 ## Optional Fields For Future SAAQ / Neighborhood Mapping Work
 
 These fields are optional now but reserved for future experiments so the schema can grow without a rename.

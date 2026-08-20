@@ -151,10 +151,26 @@ Conventions:
 - Rotate/revoke credentials after experiments.
 - Treat retired providers as docs-only until reactivated by a new issue.
 
-## Why GPU Compute Costs Are Not HashiCorp Credits
-HashiCorp credits primarily offset control-plane services (e.g., Terraform Cloud/HCP capabilities such as runs, state storage, policy checks, and collaboration features). GPU compute and managed ML services are billed by the cloud provider running the hardware and platform (AWS/Azure/GCP/DO/Vultr/etc.).
+## Billing model (updated 2026-08-06)
+
+Owner confirms **HashiCorp student / HCP credits (~$500) are still available** (expiry target ~2026-11-10). Organization `Dioscuri-Cloud` may appear as public **Free** (`free_standard`) on the TFC API — free 500 RUM does not automatically burn credits until paid RUM/features or an HCP Flex/Essentials path is active.
+
+| Item | Observed (API / owner) |
+|---|---|
+| Credit balance | **~$500 still available** (owner) — confirm exact remaining in HCP/TFC **Billing** UI |
+| Plan identifier (API) | `free_standard` (public free tier) |
+| Free RUM included | 500 managed resources / month |
 
 Practically:
-- Use HCP Terraform to provision and track cloud resources.
-- Track provider spend in `cost-ledger.md`.
-- Keep “control plane” cost separate from “compute” cost when reviewing burn.
+- Use free tier for remote state + VCS speculative plans at $0 RUM cost while under 500 resources.
+- To **intentionally spend** the $500: enable paid/Flex billing in HCP UI, grow managed resources via training stacks (`dioscuri-cloud-aws-training`), stay within **$25/experiment** unless GitHub issue approves more.
+- GPU compute is billed by cloud providers (AWS/Azure/DO), not HashiCorp.
+- Track provider compute in `cost-ledger.md`.
+
+## Planned workspace (training)
+
+| Workspace | Working directory | Purpose |
+|---|---|---|
+| `dioscuri-cloud-aws-training` | `terraform/envs/aws-training` | S3 training bucket + IAM (GitHub #47) |
+
+Add to HCP UI when `terraform/envs/aws-training` lands.

@@ -1,0 +1,27 @@
+{
+  "run_id": "synthetic-smoke-2026-08-19",
+  "job_type": "training",
+  "git_commit_sha": "0000000000000000000000000000000000000000",
+  "repo": "rmems/Dioscuri-Cloud",
+  "base_model": "synthetic/example-7b",
+  "trainer": "synthetic-trainer",
+  "steps": 10,
+  "model_slug": "synthetic/example-7b",
+  "saaq_version": "n/a",
+  "telemetry_source": "synthetic",
+  "provider": "aws",
+  "region": "example-region",
+  "instance_type": "g4dn.xlarge",
+  "gpu_type": "NVIDIA T4",
+  "dataset_uri": "s3://example-bucket/training/datasets/synthetic-tiny/manifest.json",
+  "checkpoint_uri": "s3://example-bucket/training/checkpoints/synthetic-smoke-2026-08-19/",
+  "start_time_utc": "2026-08-19T12:00:00Z",
+  "end_time_utc": "2026-08-19T12:05:00Z",
+  "estimated_cost_usd": 1.0,
+  "actual_cost_usd": null,
+  "artifact_uris": [
+    "s3://example-bucket/training/logs/synthetic-smoke-2026-08-19/metrics.json"
+  ],
+  "teardown_confirmed": false,
+  "notes": "Synthetic public-safe example only."
+}

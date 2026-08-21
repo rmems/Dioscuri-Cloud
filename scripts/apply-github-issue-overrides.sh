@@ -20,9 +20,8 @@ for n in "${ISSUES[@]}"; do
   file="${ROOT}/gh-${n}.md"
   title="$(head -1 "$file" | sed 's/^# //')"
   body="${tmpdir}/gh-${n}.body.md"
-  tail -n +2 "$file" | sed '/^[[:space:]]*$/{N;s/^\n//;}' > "$body"
-  # Drop a leading blank line left after stripping the H1 title.
-  sed -i '/./,$!d' "$body"
+  # Skip H1 title line, then drop leading blank lines (portable; no GNU sed -i).
+  tail -n +2 "$file" | awk 'NF { p = 1 } p' > "$body"
   echo "Updating #${n}: ${title}"
   if ! gh issue edit "$n" --repo "$REPO" --title "$title" --body-file "$body" --add-label training; then
     echo "label add failed for #${n}; updating title and body only" >&2

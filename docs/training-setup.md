@@ -17,7 +17,9 @@
 | 9 | [#60](https://github.com/rmems/Dioscuri-Cloud/issues/60) | RM-80 | Experiment tracking for training runs |
 | 10 | [#59](https://github.com/rmems/Dioscuri-Cloud/issues/59) | RM-79 | First bounded training smoke (tiny job + teardown) |
 
-Canonical GitHub bodies (if GitHub still shows stale text): [`docs/issues/`](issues/README.md). Apply with `scripts/apply-github-issue-overrides.sh` using your personal `gh` token.
+There is **no RM-73** in this epic. Linear IDs are not a contiguous `RM-72`–`RM-82` range.
+
+Canonical GitHub bodies (if GitHub still shows stale text): [`docs/issues/`](issues/README.md). Apply with `scripts/apply-github-issue-overrides.sh`.
 
 GitLab secondary CI: [issue #1](https://gitlab.com/rmems/Dioscuri-Cloud/-/issues/1) — see [`docs/gitlab/issue-1-training-ci.md`](gitlab/issue-1-training-ci.md).
 

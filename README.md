@@ -49,15 +49,14 @@ See `docs/cloud-credit-strategy.md`, `docs/credits/inventory.md`, and `docs/prov
 
 ## Run discipline
 
-Every cloud training run should include:
+Every cloud training run should include the fields in `docs/schemas/experiment-manifest.md`:
 
-- Git commit SHA
-- GitHub issue reference
-- `base_model` / trainer / steps (for training jobs)
-- provider and region
-- GPU or instance type
-- start/end time
-- estimated and actual cost
+- Git commit SHA and GitHub issue (`github_issue`, required for billable runs)
+- `job_type=training`, `base_model` (same as `model_slug` unless an adapter slug is used), `trainer`
+- `steps_configured` and `steps_completed` (not a single ambiguous `steps` field)
+- `telemetry_source` (`synthetic`, `sft`, or `dataset` — not a fake `saaq_version`)
+- provider, region, GPU or instance type
+- start/end time, estimated and actual cost
 - artifact URIs (`docs/training/artifact-layout.md`)
 - teardown confirmation
 

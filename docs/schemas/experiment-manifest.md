@@ -11,14 +11,15 @@ Additional source of truth:
 
 ## Required Fields
 
+These fields apply to every job type.
+
 | Field | Type | Description |
 |---|---|---|
 | `run_id` | string | Unique run identifier. Prefer a directory-safe slug or timestamped ID. |
 | `git_commit_sha` | string | Git commit SHA for the code used during the run. |
 | `repo` | string | Repository slug, e.g. `rmems/Dioscuri-Cloud` or `rmems/corinth-canal`. |
-| `model_slug` | string | Canonical model identifier used for the run. |
-| `saaq_version` | string | SAAQ version/rule family used by the run, e.g. `saaq_v1_5`, `legacy_v1_0`. |
-| `telemetry_source` | string | Source label for telemetry. Align with `corinth-canal` labels such as `synthetic`, `synthetic_fallback`, `csv_re4`, or `csv_<stem>`. |
+| `model_slug` | string | Canonical model identifier used for the run. For `job_type=training`, this is the same identifier as `base_model` unless a distinct adapter slug is recorded. |
+| `telemetry_source` | string | Source label. For SAAQ runs, use `corinth-canal` labels such as `synthetic`, `synthetic_fallback`, `csv_re4`. For training jobs, use `synthetic`, `sft`, `dataset`, or another non-SAAQ label. |
 | `provider` | string | Cloud provider used for the run, e.g. `aws`, `azure`, `gcp`, `ibm`, `do`, `vultr`. |
 | `region` | string | Cloud region or location. |
 | `instance_type` | string | Compute instance/machine type. Use `n/a` for no-compute storage-only runs. |
@@ -40,20 +41,30 @@ These fields are not core-required for every run today, but they should be popul
 | `validation_status` | string | e.g. `completed`, `tick_failed`, `gpu_setup_failed`, `storage_upload_failed`. |
 | `cost_ledger_ref` | string | Link or path to the `cost-ledger.md` row / PR / issue comment carrying the spend record. |
 | `linear_issue` | string | Linear identifier or URL, e.g. `MET-14`. |
-| `github_issue` | string | GitHub issue URL or `owner/repo#number`. |
+| `github_issue` | string | GitHub issue URL or `owner/repo#number`. **Required for any billable training run.** |
 
-## Training job fields (GitHub #52)
+## SAAQ-only required fields
 
-Populate when `job_type` is `training` (see `examples/training-run-manifest.synthetic.json`):
+Required when `job_type` is omitted, `inference`, or any SAAQ validation run. **Do not invent placeholders** on training jobs.
 
 | Field | Type | Description |
 |---|---|---|
-| `job_type` | string | Set to `training` for fine-tune/SFT/train smokes (omit or `inference` for legacy SAAQ smoke metadata). |
-| `base_model` | string | Base model identifier or HF slug used for the job. |
+| `saaq_version` | string | SAAQ version/rule family, e.g. `saaq_v1_5`, `legacy_v1_0`. Omit for `job_type=training`. |
+
+## Training job fields (GitHub #52)
+
+Required when `job_type` is `training` (see `examples/training-run-manifest.synthetic.json`):
+
+| Field | Type | Description |
+|---|---|---|
+| `job_type` | string | Set to `training` for fine-tune/SFT/train smokes. |
+| `base_model` | string | Base model identifier or HF slug. Same value as `model_slug` unless an adapter slug is recorded separately. |
 | `trainer` | string | Trainer stack, e.g. `sagemaker`, `pytorch-ddp`, `agoge-forger`. |
-| `steps` | integer | Training steps completed or configured. |
+| `steps_configured` | integer | Planned step budget for the job. |
+| `steps_completed` | integer | Steps actually finished (may be lower on early stop or failure). |
 | `dataset_uri` | string | URI to dataset manifest or prefix in the training bucket. |
-| `checkpoint_uri` | string | URI prefix for checkpoints written by the job. |
+| `checkpoint_uri` | string | URI prefix for the latest completed checkpoint (matches `latest.json` `checkpoint_prefix`). |
+| `github_issue` | string | Spend-tracking issue, e.g. `rmems/Dioscuri-Cloud#59`. |
 
 ## Optional Fields For Future SAAQ / Neighborhood Mapping Work
 

@@ -3,6 +3,7 @@
 This policy exists to keep cloud spend deliberate, reproducible, and auditable.
 
 ## Scope
+
 Applies to any cloud resource that can incur cost (compute, storage, managed services, networking, monitoring, etc.).
 
 ## Allowed Uses
@@ -29,6 +30,7 @@ Not allowed:
 - If an experiment needs more than the default cap, document the reason and approval in the GitHub issue.
 
 ## Resource Hygiene
+
 - Prefer smallest viable instances and shortest runtimes.
 - Use clear naming conventions so resources are attributable:
   - Include repo name, experiment slug, and date, e.g. `dioscuri-cloud-exp-<slug>-2026-05-22`.

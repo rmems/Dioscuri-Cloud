@@ -163,7 +163,7 @@ Owner confirms **HashiCorp student / HCP credits (~$500) are still available** (
 
 Practically:
 - Use free tier for remote state + VCS speculative plans at $0 RUM cost while under 500 resources.
-- To **intentionally spend** the $500: enable paid/Flex billing in HCP UI, grow managed resources via training stacks (`dioscuri-cloud-aws-training`), stay within **$25/experiment** unless GitHub issue approves more.
+- To **intentionally spend** the $500: owner must first confirm HCP Billing plan, remaining credit balance, payment method, and a budget alert in a GitHub `[TRAIN]` issue. **Stop** if pay-as-you-go is active without that approval. Then enable paid/Flex billing in HCP UI, grow managed resources via training stacks (`dioscuri-cloud-aws-training`), stay within **$25/experiment** unless the issue approves more.
 - GPU compute is billed by cloud providers (AWS/Azure/DO), not HashiCorp.
 - Track provider compute in `cost-ledger.md`.
 

@@ -1,23 +1,25 @@
 # Dioscuri-Cloud
 
-Cloud ML infrastructure lab for SAAQ experiments, MoE model smoke tests, cost tracking, provider evaluations, and provider-specific runbooks.
+Cloud operations layer for **AI model training setup** on student/free cloud credits: object storage, CUDA images, GPU nodes, managed training jobs (SageMaker / Azure ML), cost tracking, and HCP Terraform control plane.
 
-This repo is not the core SAAQ implementation. The core implementation lives in `rmems/corinth-canal`. This repo is the cloud operations layer used to document reproducible experiments across free/student cloud credits.
+Training implementation code may live in other repos (e.g. `rmems/agoge-forger`); this repo owns **reproducible cloud infra, runbooks, and experiment records**.
 
 ## Goals
 
-- Run small, controlled SAAQ smoke tests on cloud GPUs.
-- Keep cloud spend visible through a cost ledger.
-- Document provider setup and teardown steps before running expensive jobs.
-- Store cloud/MLOps runbooks for DigitalOcean, AWS, Azure, GCP/Vertex AI, Vultr, IBM Cloud/watsonx, Oracle Cloud, and HashiCorp/Terraform.
-- Produce durable portfolio artifacts: runbooks, experiment reports, cost notes, and reproducibility logs.
+- Stand up bounded cloud training infrastructure (S3 checkpoints, GPU or managed training jobs).
+- Keep cloud spend visible through `cost-ledger.md` and GitHub-tracked issues.
+- Document provider setup, teardown, and HCP workspace boundaries before expensive jobs.
+- Produce durable artifacts: runbooks, training smoke reports, cost notes, and manifest schemas.
+
+See [`docs/training-setup.md`](docs/training-setup.md) for the current issue epic and dependency order.
 
 ## Non-goals
 
-- No full Grok-1 training.
-- No full-model fine-tuning unless explicitly planned in a separate issue.
+- No from-scratch large-scale pretraining (e.g. full Grok-1).
 - No secrets, API keys, DSNs, local checkpoint paths, or model weights committed.
-- No long-running GPU jobs without a cost estimate and teardown plan.
+- No long-running GPU jobs without a cost estimate, GitHub issue, and teardown plan.
+
+Bounded fine-tune / SFT / tiny training smokes **are** in scope when authorized by a `[TRAIN]` issue.
 
 ## Repository layout
 
@@ -32,34 +34,30 @@ cost-ledger.md             Running estimate of cloud credit usage
 
 See `docs/repository-structure.md` for the lab skeleton and file ownership conventions.
 
-## Provider strategy
+## Provider strategy (training)
 
 | Provider | Primary role |
 |---|---|
-| DigitalOcean | First practical cloud GPU smoke-test target |
-| AWS | SageMaker/S3/ECR/IAM MLOps practice and certification alignment |
-| Azure | Azure ML/Blob/Key Vault practice and certification alignment |
-| GCP / Vertex AI | Managed ML and AI platform practice |
-| IBM Cloud | watsonx trial, research-agent prototypes, synthetic data pipelines, and managed AI service evaluation |
-| Oracle Cloud | persistent free-tier services, lightweight Rust services, telemetry/RAG backends, and always-on MCP experiments |
-| Vultr | Completed serverless inference credit sprint; inactive for near-term execution unless a future issue explicitly reactivates it |
-| HashiCorp | Terraform/HCP control plane, not model compute |
+| AWS | **Primary** — S3 artifacts, GPU instances, SageMaker training jobs |
+| Azure | **Backup** — Azure ML training jobs, Blob artifacts |
+| DigitalOcean | Optional GPU availability / small nodes |
+| GCP / Vertex AI | Metadata-only / tiny planning under monthly cap |
+| HashiCorp | HCP Terraform control plane (not GPU compute) |
+| IBM Cloud / Oracle / Vultr | Expired trial or closeout — **not** the active training path |
 
-See `docs/cloud-credit-strategy.md` and `docs/provider-comparison.md` for the current provider roles and planning criteria.
+See `docs/cloud-credit-strategy.md`, `docs/credits/inventory.md`, and `docs/provider-comparison.md`.
 
 ## Run discipline
 
-Every cloud run should include:
+Every cloud training run should include the fields in `docs/schemas/experiment-manifest.md`:
 
-- Git commit SHA
-- model slug
-- SAAQ version
-- telemetry source
-- provider and region
-- GPU or instance type
-- start/end time
-- estimated cost
-- artifacts produced
+- Git commit SHA and GitHub issue (`github_issue`, required for billable runs)
+- `job_type=training`, `base_model` (same as `model_slug` unless an adapter slug is used), `trainer`
+- `steps_configured` and `steps_completed` (not a single ambiguous `steps` field)
+- `telemetry_source` (`synthetic`, `sft`, or `dataset` — not a fake `saaq_version`)
+- provider, region, GPU or instance type
+- start/end time, estimated and actual cost
+- artifact URIs (`docs/training/artifact-layout.md`)
 - teardown confirmation
 
-Start with documentation and smoke tests. Scale only after local and cloud baselines are reproducible.
+Start with documentation and bounded smokes. Scale only after a reproducible tiny job succeeds.

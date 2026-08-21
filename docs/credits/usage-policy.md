@@ -3,6 +3,7 @@
 This policy exists to keep cloud spend deliberate, reproducible, and auditable.
 
 ## Scope
+
 Applies to any cloud resource that can incur cost (compute, storage, managed services, networking, monitoring, etc.).
 
 ## Allowed Uses
@@ -14,7 +15,7 @@ Not allowed:
 - Long-lived resources without explicit justification and an owner.
 
 ## Tracking Requirements (Mandatory)
-- A Linear issue is required for any spend. The issue must describe:
+- A **GitHub issue** on `rmems/Dioscuri-Cloud` (or linked `[TRAIN]` issue in the training epic) is required for any spend. A Linear mirror may exist but GitHub is the canonical tracker for this repo. The issue must describe:
   - Purpose and expected output.
   - Estimated cost and duration.
   - Teardown plan.
@@ -24,16 +25,17 @@ Not allowed:
 - `cost-ledger.md` must be updated in the same PR that creates or changes the billable resources, or in the results PR if no prior ledger entry exists for that run.
 
 ## Budget Guardrails
-- Set an explicit estimated cost in the Linear issue before creating resources.
+- Set an explicit estimated cost in the GitHub issue before creating resources.
 - Default spend cap is the provider-specific cap listed in `docs/credits/inventory.md` (cap period varies by provider—per-experiment for most, per-month aggregate for GCP). For providers not listed there, the default cap is $10 per experiment.
-- If an experiment needs more than the default cap, document the reason and approval in the Linear issue.
+- If an experiment needs more than the default cap, document the reason and approval in the GitHub issue.
 
 ## Resource Hygiene
+
 - Prefer smallest viable instances and shortest runtimes.
 - Use clear naming conventions so resources are attributable:
   - Include repo name, experiment slug, and date, e.g. `dioscuri-cloud-exp-<slug>-2026-05-22`.
 - Use tags/labels to include:
-  - `owner`, `linear`, `pr`, `teardown_by`.
+  - `owner`, `github` (issue number), `pr`, `teardown_by`.
 
 ## Teardown Requirements
 - Teardown must be planned up-front and executed promptly after the experiment completes. For providers with explicit teardown deadlines in the Budget caps / guardrails column of `docs/credits/inventory.md`, follow those deadlines (e.g., DigitalOcean within 24 h of completion, Azure same day when possible).

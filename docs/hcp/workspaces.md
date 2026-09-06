@@ -63,12 +63,14 @@ Recommended HCP project/folder grouping (optional in UI):
 - `dioscuri-cloud/core` -> `dioscuri-cloud-hcp-core`
 - `dioscuri-cloud/providers/ibm` -> `dioscuri-cloud-ibm-dev`
 - `dioscuri-cloud/providers/oracle` -> `dioscuri-cloud-oracle-dev`
+- `dioscuri-cloud/providers/aws` -> `dioscuri-cloud-aws-training`
 
 | Workspace | Working directory | State boundary | Provider mapping | Variable set strategy |
 |---|---|---|---|---|
 | `dioscuri-cloud-hcp-core` | `infra/terraform/environments/dev` | HCP control-plane / onboarding metadata only | None | Common variables only |
 | `dioscuri-cloud-ibm-dev` | `terraform/envs/ibm-dev` | IBM dev account / resource group | IBM Cloud | Common + IBM (`IBMCLOUD_*`) |
 | `dioscuri-cloud-oracle-dev` | `terraform/envs/oracle-dev` | Oracle dev tenancy / compartment | Oracle Cloud | Common + OCI (`OCI_*`) |
+| `dioscuri-cloud-aws-training` | `terraform/envs/aws-training` | AWS training account — S3 bucket + IAM primitives for datasets/checkpoints/logs | AWS | Common + AWS (`AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) |
 
 IBM and Oracle workspaces must remain isolated (separate state, separate sensitive variable sets).
 
@@ -169,10 +171,3 @@ Practically:
 - GPU compute is billed by cloud providers (AWS/Azure/DO), not HashiCorp.
 - Track provider compute in `cost-ledger.md`.
 
-## Planned workspace (training)
-
-| Workspace | Working directory | Purpose |
-|---|---|---|
-| `dioscuri-cloud-aws-training` | `terraform/envs/aws-training` | S3 training bucket + IAM (GitHub #47) |
-
-Add to HCP UI when `terraform/envs/aws-training` lands.

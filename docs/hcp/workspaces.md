@@ -77,12 +77,14 @@ VCS setup: `docs/hcp/vcs-integration.md`
 
 ### SAAQ workload note
 
-The `ibm-dev` and `oracle-dev` workspaces back the SAAQ artifact store + CPU
-validation pipeline (explore / validate / store the corinth-canal SAAQ runs that
-feed `Surrogate_Viz.jl`). Object storage layout, the portable run manifest, the
-sync contract, and CPU-only validation jobs are defined in
-`docs/saaq/cloud-store.md`. GPU re-runs (which require GGUF/safetensors weights)
-are deferred to separate issues and are not part of these dev workspaces.
+**IBM and Oracle promo credits are exhausted** (operator confirmed 2026-08-20; see
+`docs/credits/inventory.md`). The `ibm-dev` and `oracle-dev` workspaces are
+**skeleton-only** — do not apply billable IBM/Oracle resources for SAAQ store/validate.
+
+The original SAAQ artifact store + CPU validation design lives in
+`docs/saaq/cloud-store.md`; execution is **deferred** to the AWS training path
+(GitHub #47, #52, #53). GPU re-runs (GGUF/safetensors weights) remain separate
+deferred issues and are not part of these dev workspaces.
 
 ## Deferred workspaces (document only; do not create unless needed)
 

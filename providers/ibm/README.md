@@ -6,8 +6,8 @@ IBM Cloud is currently assigned to watsonx, research-agent, synthetic-data, and 
 
 | Item | Status | Notes |
 |---|---|---|
-| IBM Cloud credit | Claimed: `$200` | Track spend in `cost-ledger.md` before creating billable resources. |
-| watsonx free trial | Activated | Use for managed AI, agent, and evaluation experiments where available. |
+| IBM Cloud credit | **Exhausted** (was `$200`, expired 2026-06-28) | Operator confirmed **$0 remaining** (2026-08-20). Do not plan new billable IBM spend. |
+| watsonx free trial | **Inactive for new spend** | Historical experiments only; verify console before any reactivation. |
 
 ## Account And Region Notes
 

@@ -1,0 +1,35 @@
+docs/cloud-credit-strategy.md
+  s_d9a0adf4ebb485::t_a321f2e1b44941 10,12
+docs/issues/gh-57.md
+  s_d9a0adf4ebb485::t_4374cdca986731 23-24
+providers/oracle/README.md
+  s_d9a0adf4ebb485::t_46528428b564ba 9
+docs/training-setup.md
+  s_d9a0adf4ebb485::t_795ec8a2e4fb7a 45
+docs/credits/inventory.md
+  s_d9a0adf4ebb485::t_7c7c4e9a7ba670 17-18
+providers/ibm/README.md
+  s_d9a0adf4ebb485::t_3ebb5011604c75 9-10
+cost-ledger.md
+  s_d9a0adf4ebb485::t_6cb109f7be4686 17
+docs/saaq/cloud-store.md
+  s_d9a0adf4ebb485::t_d5de714080e8e4 178-182,185-188
+docs/hcp/workspaces.md
+  s_d9a0adf4ebb485::t_deb8d9e2a620d3 80-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2836836fbd30eba08cce2b6957e79be9c0865d7e",
+  "prompts": {},
+  "sessions": {
+    "s_d9a0adf4ebb485": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "d186e3a6-5643-49fe-95ef-7adfc6badf61",
+        "model": "composer-2.5"
+      },
+      "human_author": "Raul Montoya Cardenas <montoyaraul34@gmail.com>"
+    }
+  }
+}

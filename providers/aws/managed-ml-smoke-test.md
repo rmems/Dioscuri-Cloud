@@ -174,6 +174,12 @@ job name and keep the original `run_id` (unsanitized) for S3 paths and the
 manifest:
 
 ```bash
+# Fail fast if RUN_ID was never set: an empty RUN_ID would otherwise
+# silently collapse every forgotten-RUN_ID launch onto the same job name
+# (the empty string's hash is a fixed constant) and the same shared
+# training/checkpoints//, training/logs// prefixes across unrelated runs.
+: "${RUN_ID:?RUN_ID must be set to a unique identifier for this run before launching (e.g. a timestamp-based slug)}"
+
 # Lowercase, collapse every run of non-alphanumeric characters to one
 # hyphen, strip leading/trailing hyphens, truncate the readable part to 53
 # chars, then append an 8-char hash of the full original RUN_ID — this

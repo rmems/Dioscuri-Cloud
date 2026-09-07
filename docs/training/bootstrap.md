@@ -40,9 +40,11 @@ runs.
    `aws ssm wait command-executed`** until it actually finishes, rather than
    just checking that the asynchronous dispatch was accepted (a successful
    dispatch does not mean `nvidia-smi` itself succeeded). This step requires
-   `ssm:SendCommand` on the calling identity (write) and the target
-   instance's own SSM Agent/instance-profile registration (a separate,
-   node-side permission) — it is not read-only. If `TRAINING_SAGEMAKER_JOB_NAME`
+   `ssm:SendCommand` **and** `ssm:GetCommandInvocation` (the waiter polls
+   this — a distinct permission, not covered by `ssm:SendCommand` alone) on
+   the calling identity, plus the target instance's own SSM Agent/
+   instance-profile registration (a separate, node-side permission) — it is
+   not read-only. If `TRAINING_SAGEMAKER_JOB_NAME`
    is set instead, describes that job (read-only). If neither is set, this
    step is skipped — expected before #53/#54 provision an actual node or job.
 

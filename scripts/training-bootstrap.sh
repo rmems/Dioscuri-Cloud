@@ -36,12 +36,24 @@ fi
 # Same request pattern as scripts/hcp/bootstrap-workspaces.sh: a real,
 # authenticated, read-only lookup of the specific workspace — not just
 # token/file presence, which invalid/expired/unrelated credentials pass too.
+# The bearer token is passed via a curl config file (-K), not -H directly,
+# so it never appears in this process's argv (visible to other users via
+# `ps` on a shared machine for the call's duration).
+HCP_CURL_CONFIG="$(mktemp)"
+trap 'rm -f "${HCP_CURL_CONFIG}"' EXIT
+chmod 600 "${HCP_CURL_CONFIG}"
+printf 'header = "Authorization: Bearer %s"\n' "${TF_TOKEN_app_terraform_io}" >"${HCP_CURL_CONFIG}"
+
+# set +e/-e around this: a network-level curl failure (DNS, no route, TLS)
+# makes the pipeline's exit status (pipefail) non-zero, and a bare failed
+# assignment would trip `set -e` before the check below ever runs.
+set +e
 WORKSPACE_ID="$(
-  curl -sS -H "Authorization: Bearer ${TF_TOKEN_app_terraform_io}" \
-    -H "Content-Type: application/vnd.api+json" \
+  curl -sS -K "${HCP_CURL_CONFIG}" -H "Content-Type: application/vnd.api+json" \
     "${HCP_API_BASE}/organizations/${HCP_ORG}/workspaces/${HCP_WORKSPACE}" |
     jq -r '.data.id // empty'
 )"
+set -e
 [ -n "${WORKSPACE_ID}" ] ||
   fail "Could not authenticate to HCP org '${HCP_ORG}' workspace '${HCP_WORKSPACE}'. Check that TF_TOKEN_app_terraform_io is valid, unexpired, and scoped to this organization."
 echo "OK: authenticated to HCP org '${HCP_ORG}', workspace '${HCP_WORKSPACE}' (id ${WORKSPACE_ID})."
@@ -77,10 +89,20 @@ command -v docker >/dev/null 2>&1 || fail "docker not found. Install Docker firs
 if [ -n "${TRAINING_ECR_REPOSITORY_URL:-}" ]; then
   IMAGE_TAG="${TRAINING_IMAGE_TAG:-latest}"
   REGISTRY_HOST="${TRAINING_ECR_REPOSITORY_URL%%/*}"
+  # Let the AWS CLI resolve region normally (AWS_REGION/AWS_DEFAULT_REGION,
+  # then the active profile's own `region` setting, then instance metadata)
+  # rather than requiring an env var — an AWS_PROFILE with a configured
+  # region is a valid, common setup that doesn't set either env var.
   ECR_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-}}"
-  [ -n "${ECR_REGION}" ] || fail "AWS_REGION (or AWS_DEFAULT_REGION) must be set to authenticate Docker to ECR."
-  aws ecr get-login-password --region "${ECR_REGION}" | docker login --username AWS --password-stdin "${REGISTRY_HOST}" >/dev/null ||
-    fail "docker login to ${REGISTRY_HOST} failed. Confirm ecr:GetAuthorizationToken on your IAM identity (providers/aws/training-image-runbook.md)."
+  if [ -n "${ECR_REGION}" ]; then
+    ECR_LOGIN_PASSWORD="$(aws ecr get-login-password --region "${ECR_REGION}")" ||
+      fail "aws ecr get-login-password --region ${ECR_REGION} failed. Confirm ecr:GetAuthorizationToken on your IAM identity."
+  else
+    ECR_LOGIN_PASSWORD="$(aws ecr get-login-password)" ||
+      fail "aws ecr get-login-password failed. Confirm ecr:GetAuthorizationToken on your IAM identity, and that a region is resolvable (AWS_REGION, AWS_DEFAULT_REGION, or the active profile's region setting)."
+  fi
+  printf '%s' "${ECR_LOGIN_PASSWORD}" | docker login --username AWS --password-stdin "${REGISTRY_HOST}" >/dev/null ||
+    fail "docker login to ${REGISTRY_HOST} failed."
   docker pull "${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG}" ||
     fail "docker pull ${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG} failed. Confirm this tag has been pushed."
   echo "OK: pulled ${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG}."
@@ -110,10 +132,20 @@ if [ -n "${TRAINING_GPU_INSTANCE_ID:-}" ]; then
   )" ||
     fail "SSM send-command (nvidia-smi dispatch) to ${TRAINING_GPU_INSTANCE_ID} failed: ${SSM_COMMAND_ID}. This requires ssm:SendCommand on the IAM principal running this script (a write permission — this step is not read-only) AND the target instance's own SSM Agent/instance-profile registration (a separate, node-side permission)."
 
-  if aws ssm wait command-executed --command-id "${SSM_COMMAND_ID}" --instance-id "${TRAINING_GPU_INSTANCE_ID}" 2>/dev/null; then
+  # The waiter polls ssm:GetCommandInvocation — a separate permission from
+  # ssm:SendCommand above. Capture its stderr (and exit status explicitly,
+  # since a bare failed assignment would otherwise trip `set -e` before the
+  # check below runs) so an AccessDenied here isn't misreported as "the
+  # command didn't reach Success".
+  set +e
+  WAIT_ERROR="$(aws ssm wait command-executed --command-id "${SSM_COMMAND_ID}" --instance-id "${TRAINING_GPU_INSTANCE_ID}" 2>&1 1>/dev/null)"
+  WAIT_STATUS=$?
+  set -e
+
+  if [ "${WAIT_STATUS}" -eq 0 ]; then
     echo "OK: nvidia-smi via SSM (command ${SSM_COMMAND_ID}) completed successfully on ${TRAINING_GPU_INSTANCE_ID}."
   else
-    fail "nvidia-smi via SSM (command ${SSM_COMMAND_ID}) did not reach Success on ${TRAINING_GPU_INSTANCE_ID}. Inspect with: aws ssm get-command-invocation --command-id ${SSM_COMMAND_ID} --instance-id ${TRAINING_GPU_INSTANCE_ID}"
+    fail "nvidia-smi via SSM (command ${SSM_COMMAND_ID}) on ${TRAINING_GPU_INSTANCE_ID} did not reach Success: ${WAIT_ERROR}. If this is an AccessDenied on GetCommandInvocation, grant ssm:GetCommandInvocation (separate from ssm:SendCommand) to the calling IAM principal. Otherwise inspect with: aws ssm get-command-invocation --command-id ${SSM_COMMAND_ID} --instance-id ${TRAINING_GPU_INSTANCE_ID}"
   fi
 elif [ -n "${TRAINING_SAGEMAKER_JOB_NAME:-}" ]; then
   aws sagemaker describe-training-job --training-job-name "${TRAINING_SAGEMAKER_JOB_NAME}" >/dev/null ||

@@ -1,0 +1,53 @@
+providers/aws/training-image-runbook.md
+  s_8c6bd430eeef76::t_076e2609032d35 1-72
+terraform/modules/training_execution/README.md
+  s_8c6bd430eeef76::t_40287c44907143 1-48
+terraform/modules/training_node/README.md
+  s_8c6bd430eeef76::t_166aaf7be2fab1 1-54
+terraform/modules/training_execution/main.tf
+  s_8c6bd430eeef76::t_abb804cec9b4e9 1-120
+terraform/modules/training_node/main.tf
+  s_8c6bd430eeef76::t_bec1360b38491b 1-90
+terraform/modules/training_execution/.terraform.lock.hcl
+  s_8c6bd430eeef76::t_1cfe118a1faa7b 1-26
+terraform/README.md
+  s_8c6bd430eeef76::t_76a2c2b850759b 17-18
+training/docker/.dockerignore
+  s_8c6bd430eeef76::t_9f046f1107d113 1-9
+training/docker/Dockerfile
+  s_8c6bd430eeef76::t_ff83c7f0ff5548 1-37
+training/docker/README.md
+  s_8c6bd430eeef76::t_8f49a833eaad8b 1-39
+training/docker/entrypoint.sh
+  s_8c6bd430eeef76::t_642e7aca2084c4 1-26
+terraform/modules/training_node/outputs.tf
+  s_8c6bd430eeef76::t_c1e7ff56919eee 1-26
+terraform/modules/training_execution/versions.tf
+  s_8c6bd430eeef76::t_57076306abc99b 1-9
+terraform/modules/training_node/versions.tf
+  s_8c6bd430eeef76::t_3d66d0b86c0e24 1-9
+terraform/modules/training_execution/variables.tf
+  s_8c6bd430eeef76::t_bfdb63b27dc1a2 1-40
+terraform/modules/training_execution/outputs.tf
+  s_8c6bd430eeef76::t_c58a1e3409dd33 1-22
+terraform/modules/training_node/.terraform.lock.hcl
+  s_8c6bd430eeef76::t_67f0df6e2a5148 1-26
+terraform/modules/training_node/variables.tf
+  s_8c6bd430eeef76::t_5e6f4a8802ac7e 1-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9d0fbd9318494b4dfa7fa725a8ce2b657eca89bc",
+  "prompts": {},
+  "sessions": {
+    "s_8c6bd430eeef76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "041adaa9-efa3-436f-994e-e595a09bceb8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Raul Montoya Cardenas <montoyaraul34@gmail.com>"
+    }
+  }
+}

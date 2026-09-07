@@ -126,7 +126,11 @@ data "aws_iam_policy_document" "training_bucket_rw" {
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
-      values   = ["training/*"]
+      # Both the bare "training" prefix and anything deeper under it must
+      # match, or a ListBucket call passing the root prefix without a
+      # trailing "/*" segment is denied (same fix as training_execution
+      # module — see terraform/modules/training_execution/main.tf).
+      values = ["training", "training/*"]
     }
   }
 

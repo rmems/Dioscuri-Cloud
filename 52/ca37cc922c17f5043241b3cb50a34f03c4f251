@@ -1,0 +1,28 @@
+scripts/training-bootstrap.sh
+  s_8c6bd430eeef76::t_432627636a85ee 98-99,101-102,105
+  s_8c6bd430eeef76::t_7814e61b01b83a 135,141,148
+  s_8c6bd430eeef76::t_e2d559df58c2ee 97,100,104
+  s_8c6bd430eeef76::t_91c2f7ab32a83a 136-140,142-145
+  s_8c6bd430eeef76::t_0e7233ba4b3922 39-46,52
+  s_8c6bd430eeef76::t_e4271ab2ffe846 47-50,56
+  s_8c6bd430eeef76::t_05e54093e0cc70 92-95,103
+docs/training/bootstrap.md
+  s_8c6bd430eeef76::t_03bbb8cfb54b2a 43-44
+  s_8c6bd430eeef76::t_e2b14761ce7dae 45-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "52ca37cc922c17f5043241b3cb50a34f03c4f251",
+  "prompts": {},
+  "sessions": {
+    "s_8c6bd430eeef76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "041adaa9-efa3-436f-994e-e595a09bceb8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Raul Montoya Cardenas <montoyaraul34@gmail.com>"
+    }
+  }
+}

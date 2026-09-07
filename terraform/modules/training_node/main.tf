@@ -87,6 +87,7 @@ resource "aws_instance" "node" {
   root_block_device {
     volume_size = var.root_volume_size_gb
     volume_type = "gp3"
+    encrypted   = true
   }
 
   tags = merge(var.tags, {

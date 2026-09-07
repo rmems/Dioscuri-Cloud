@@ -4,23 +4,24 @@
 # run using this image must satisfy before any cloud spend.
 FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
 
-ARG PYTHON_VERSION=3.11
-
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1 \
     PYTHONUNBUFFERED=1
 
+# Use Ubuntu 22.04's default python3 (3.10) rather than pinning python3.11 —
+# jammy's default apt sources don't carry python3.11 without adding the
+# deadsnakes PPA, which would make this build fail out of the box.
+#
 # Base OS packages intentionally track the latest security patches available
 # for the pinned base image tag/digest above; the base image tag is the
 # reproducibility control here, not individual apt package versions.
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        python${PYTHON_VERSION} \
+        python3 \
         python3-pip \
         ca-certificates \
         curl \
     && rm -rf /var/lib/apt/lists/* \
-    && ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 \
     && ln -sf /usr/bin/python3 /usr/bin/python
 
 # Torch build must track the CUDA runtime above (cu124). Bump both together.

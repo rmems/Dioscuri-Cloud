@@ -42,7 +42,9 @@ module "gpu_node" {
   vpc_id         = "vpc-xxxxxxxx"
   operator_cidrs = ["203.0.113.0/24"]
 
-  iam_policy_arns = [module.training_execution.execution_role_arn] # or the #47 bucket rw policy ARN
+  # iam_policy_arns takes IAM *policy* ARNs, not role ARNs — e.g. the #47
+  # training_bucket_rw policy output by terraform/envs/aws-training.
+  iam_policy_arns = [module.aws_training_bucket.training_bucket_rw_policy_arn]
 
   tags = {
     owner       = "rmems"

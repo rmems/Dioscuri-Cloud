@@ -10,8 +10,8 @@ variable "instance_count" {
   default     = 0
 
   validation {
-    condition     = var.instance_count >= 0 && var.instance_count <= 2
-    error_message = "instance_count must be between 0 and 2 (0 disables the node entirely; safety bound for GPU instances — see docs/runbooks/gpu-smoke-test-readiness.md)."
+    condition     = var.instance_count >= 0 && var.instance_count <= 2 && var.instance_count == floor(var.instance_count)
+    error_message = "instance_count must be a whole number between 0 and 2 (0 disables the node entirely; safety bound for GPU instances — see docs/runbooks/gpu-smoke-test-readiness.md)."
   }
 }
 

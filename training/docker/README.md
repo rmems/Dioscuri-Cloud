@@ -27,10 +27,13 @@ docker run --rm dioscuri-cloud-training:local --help
 ```
 
 On a GPU host, the entrypoint runs `nvidia-smi` as a dry-run check before
-executing your command:
+executing your command. `train.py` below is a placeholder for your own
+training script — the image ships no training code; mount or `COPY` it in,
+or stage it from S3 at container start, before running this:
 
 ```bash
-docker run --rm --gpus all dioscuri-cloud-training:local python3 train.py --steps 10
+docker run --rm --gpus all -v "$(pwd)":/workspace -w /workspace \
+  dioscuri-cloud-training:local python3 train.py --steps 10
 ```
 
 ## Build and push to ECR

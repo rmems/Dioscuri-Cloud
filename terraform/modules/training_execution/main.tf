@@ -67,7 +67,10 @@ data "aws_iam_policy_document" "execution" {
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
-      values   = ["${var.bucket_training_prefix}/*"]
+      # Both the bare prefix (a caller listing exactly "training") and any
+      # deeper prefix under it must match, or ListBucket calls that pass the
+      # root prefix without a trailing "/*" segment are denied.
+      values = [var.bucket_training_prefix, "${var.bucket_training_prefix}/*"]
     }
   }
 

@@ -79,6 +79,11 @@ resource "aws_instance" "node" {
   iam_instance_profile   = aws_iam_instance_profile.node.name
   key_name               = local.create_key_pair ? aws_key_pair.node[0].key_name : null
 
+  metadata_options {
+    http_tokens   = "required" # enforce IMDSv2; IMDSv1 is not permitted
+    http_endpoint = "enabled"
+  }
+
   root_block_device {
     volume_size = var.root_volume_size_gb
     volume_type = "gp3"

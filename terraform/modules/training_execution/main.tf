@@ -22,7 +22,7 @@ resource "aws_iam_role" "execution" {
 
 resource "aws_ecr_repository" "training" {
   name                 = var.ecr_repository_name
-  image_tag_mutability = var.ecr_image_tag_mutability
+  image_tag_mutability = "IMMUTABLE" # a tag must always point at one build; not caller-configurable
 
   image_scanning_configuration {
     scan_on_push = true

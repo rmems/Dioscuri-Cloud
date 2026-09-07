@@ -21,12 +21,6 @@ variable "ecr_repository_name" {
   default     = "dioscuri-cloud-training"
 }
 
-variable "ecr_image_tag_mutability" {
-  description = "ECR image tag mutability (IMMUTABLE recommended so a tag always points at one build)."
-  type        = string
-  default     = "IMMUTABLE"
-}
-
 variable "ecr_untagged_image_expiry_days" {
   description = "Days after which untagged ECR images are expired by the lifecycle policy."
   type        = number

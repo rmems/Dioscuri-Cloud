@@ -10,6 +10,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1 \
     PYTHONUNBUFFERED=1
 
+# hadolint ignore=DL3008 -- base OS packages intentionally track the latest
+# security patches available for the pinned base image tag/digest above;
+# the base image tag is the reproducibility control, not individual apt versions.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python${PYTHON_VERSION} \
         python3-pip \
@@ -21,17 +24,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Torch build must track the CUDA runtime above (cu124). Bump both together.
 RUN python3 -m pip install --no-cache-dir \
-        torch --index-url https://download.pytorch.org/whl/cu124 \
+        torch==2.4.1 --index-url https://download.pytorch.org/whl/cu124 \
     && python3 -m pip install --no-cache-dir \
-        boto3 \
-        numpy
+        boto3==1.35.36 \
+        numpy==1.26.4
+
+RUN useradd --create-home --uid 1000 --shell /usr/sbin/nologin trainer
 
 WORKDIR /opt/training
 COPY entrypoint.sh /opt/training/entrypoint.sh
-RUN chmod +x /opt/training/entrypoint.sh
+RUN chmod +x /opt/training/entrypoint.sh && chown -R trainer:trainer /opt/training
 
 # No dataset/checkpoint/weight files are baked into this image — training
 # code and datasets are staged at runtime from S3 (docs/training/artifact-layout.md).
+
+USER trainer
 
 ENTRYPOINT ["/opt/training/entrypoint.sh"]
 CMD ["--help"]

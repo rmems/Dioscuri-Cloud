@@ -45,5 +45,5 @@ OAuth clients (GitHub VCS): **0** — install HashiCorp GitHub app before specul
 
 1. Unblock VCS + speculative plans ($0 process value).
 2. Keep day-to-day under free 500 RUM when possible.
-3. Intentionally enable paid path only for bounded labs that produce durable artifacts (policies, multi-workspace stacks for SAAQ store, agoge training nodes metadata) and stay within **$25/experiment** unless Linear-approved.
+3. Intentionally enable paid path only for bounded labs that produce durable artifacts (policies, multi-workspace stacks for SAAQ store, agoge training nodes metadata) and stay within **$25/experiment** unless approved in a GitHub issue (`docs/credits/usage-policy.md` — GitHub is canonical for spend tracking; a Linear mirror does not replace it), with the run recorded in `cost-ledger.md`.
 4. Provider GPU/compute still uses AWS/Azure/DO (etc.) student credits — separate from HashiCorp.

@@ -3,14 +3,17 @@
 # Provider auth: docs/hcp/provider-variable-map.md (AWS section).
 
 locals {
-  common_tags = merge({
+  # var.tags is merged first so the governance tags below always win —
+  # callers must not be able to override owner/github/issue/teardown_by/
+  # review_cadence via HCP workspace input.
+  common_tags = merge(var.tags, {
     owner          = "rmems"
     project        = "dioscuri-cloud-training"
     github         = "47"
     issue          = "47"
     teardown_by    = "n/a-persistent"
     review_cadence = "monthly" # persistent bucket — see docs/credits/usage-policy.md
-  }, var.tags)
+  })
 }
 
 # ── Training bucket (datasets/checkpoints/logs — docs/training/artifact-layout.md) ──
@@ -64,6 +67,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "training" {
     id     = "abort-incomplete-multipart-uploads"
     status = "Enabled"
 
+    filter {} # empty filter = applies to all objects; required by the provider schema
+
     abort_incomplete_multipart_upload {
       days_after_initiation = var.abort_incomplete_multipart_upload_days
     }
@@ -73,12 +78,39 @@ resource "aws_s3_bucket_lifecycle_configuration" "training" {
     id     = "expire-noncurrent-versions"
     status = "Enabled"
 
+    filter {} # empty filter = applies to all objects; required by the provider schema
+
     noncurrent_version_expiration {
       noncurrent_days = var.noncurrent_version_expiration_days
     }
   }
 
   depends_on = [aws_s3_bucket_versioning.training]
+}
+
+data "aws_iam_policy_document" "training_deny_insecure_transport" {
+  statement {
+    sid       = "DenyInsecureTransport"
+    effect    = "Deny"
+    actions   = ["s3:*"]
+    resources = [aws_s3_bucket.training.arn, "${aws_s3_bucket.training.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "training" {
+  bucket = aws_s3_bucket.training.id
+  policy = data.aws_iam_policy_document.training_deny_insecure_transport.json
 }
 
 # ── IAM primitive (unattached; #61 attaches this to the SageMaker training

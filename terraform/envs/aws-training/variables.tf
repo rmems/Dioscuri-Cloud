@@ -22,12 +22,22 @@ variable "noncurrent_version_expiration_days" {
   description = "Days to retain noncurrent (superseded) object versions before expiring them, since versioning is enabled. Bounds storage cost growth."
   type        = number
   default     = 90
+
+  validation {
+    condition     = var.noncurrent_version_expiration_days >= 1 && var.noncurrent_version_expiration_days == floor(var.noncurrent_version_expiration_days)
+    error_message = "noncurrent_version_expiration_days must be a positive whole number (AWS requires a non-zero positive integer)."
+  }
 }
 
 variable "abort_incomplete_multipart_upload_days" {
   description = "Days after which incomplete multipart uploads are aborted (required lifecycle rule per issue #47)."
   type        = number
   default     = 7
+
+  validation {
+    condition     = var.abort_incomplete_multipart_upload_days >= 1 && var.abort_incomplete_multipart_upload_days == floor(var.abort_incomplete_multipart_upload_days)
+    error_message = "abort_incomplete_multipart_upload_days must be a positive whole number (AWS requires a non-zero positive integer)."
+  }
 }
 
 variable "tags" {

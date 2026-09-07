@@ -14,6 +14,8 @@ do **not** use `infra/terraform/environments/aws-training`.
   - Lifecycle rules: abort incomplete multipart uploads after
     `var.abort_incomplete_multipart_upload_days` days; expire noncurrent
     object versions after `var.noncurrent_version_expiration_days` days
+  - Bucket policy (`aws_s3_bucket_policy.training`) denying any request over
+    plain HTTP (`aws:SecureTransport = false`)
 - Least-privilege IAM policy (`aws_iam_policy.training_bucket_rw`) scoped to
   the `training/*` prefix of this bucket. **Not attached** to any role/user
   in this PR — a follow-up issue (#61, `training_execution` module) attaches

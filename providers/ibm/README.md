@@ -1,6 +1,6 @@
 # IBM Cloud And watsonx Onboarding
 
-IBM Cloud is currently assigned to watsonx, research-agent, synthetic-data, and object-storage experiments for Dioscuri-Cloud.
+**Historical / reference-only.** IBM Cloud credit is exhausted (see below) — do not plan new billable IBM spend. The watsonx/research-agent/synthetic-data/object-storage assignments and experiment ideas below document what this account *was* used for and remain for reference; they are not active execution guidance. The AWS training path (GitHub #47/#52/#53) is the active path for equivalent work.
 
 ## Credit And Trial Status
 
@@ -28,7 +28,7 @@ IBM Cloud is currently assigned to watsonx, research-agent, synthetic-data, and 
 | Kubernetes / OpenShift options | Later container orchestration labs only after cost guardrails are clear. |
 | Vector / retrieval services | RAG or SAAQ assistant prototypes if available under the account/trial. |
 
-## First Experiment Ideas
+## First Experiment Ideas (historical — not active; credit exhausted)
 
 | Idea | Output Artifact | Guardrail |
 |---|---|---|

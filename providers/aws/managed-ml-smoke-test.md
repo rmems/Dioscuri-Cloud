@@ -184,7 +184,11 @@ one automatically produces `docs/training/artifact-layout.md`'s
 the training container itself must write those (into `CheckpointConfig`'s
 `LocalPath`, default `/opt/ml/checkpoints/`, for checkpoints; via an
 explicit S3 `PutObject` call for `metrics.json`, since SageMaker's
-CloudWatch integration does not write to a repo-defined S3 path):
+CloudWatch integration does not write to a repo-defined S3 path). The
+container cannot reconstruct the original `RUN_ID` from
+`SAGEMAKER_JOB_NAME` (lowercased and hyphenated above) — pass the real
+`run_id` and the exact metrics destination in explicitly via
+`--environment`:
 
 ```bash
 aws sagemaker create-training-job \
@@ -206,6 +210,7 @@ aws sagemaker create-training-job \
   --checkpoint-config S3Uri="s3://<bucket>/training/checkpoints/<run_id>/",LocalPath="/opt/ml/checkpoints" \
   --resource-config InstanceType=ml.g4dn.xlarge,InstanceCount=1,VolumeSizeInGB=50 \
   --stopping-condition MaxRuntimeInSeconds=1800 \
+  --environment RUN_ID="${RUN_ID}",METRICS_S3_URI="s3://<bucket>/training/logs/${RUN_ID}/metrics.json" \
   --tags Key=owner,Value=rmems Key=github,Value=54 Key=pr,Value=<pr-number> Key=teardown_by,Value=<same-day>
 ```
 

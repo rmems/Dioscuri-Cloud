@@ -41,7 +41,7 @@ uninformative failure rather than a real go/no-go signal.
 - [ ] Quota / availability checked — requires a real AWS account session against the training account
 - [ ] Terraform plan reviewed — PRs #67/#68 pass `terraform validate`/`terraform test` in CI, which is not the same as a reviewed `terraform plan` against real HCP state; leave unchecked until a real plan exists
 - [x] Artifact path selected: `s3://<bucket>/training/checkpoints/<run_id>/` per `docs/training/artifact-layout.md`
-- [x] Experiment manifest template prepared (`docs/schemas/experiment-manifest.md`, training fields)
+- [x] Experiment manifest template prepared — run-specific draft below (not just a link to the generic schema), with known fields filled in and the rest marked `TBD`
 - [x] Teardown checklist linked (`docs/runbooks/teardown-checklist.md`) — see Teardown section below for why a SageMaker job's teardown looks different from a deletable resource
 - [ ] Max runtime / cost cap defined — proposed below, needs operator sign-off before launch
 
@@ -55,6 +55,43 @@ uninformative failure rather than a real go/no-go signal.
 - Max runtime: `1800` seconds (30 minutes) — generous upper bound for a "tiny job"; actual smoke should complete in minutes
 - Max cost cap (USD): `$25` (default AWS cap per `docs/credits/inventory.md`; this smoke should cost well under $1 for a `ml.g4dn.xlarge` running a few minutes)
 - Artifact path: `s3://<bucket>/training/checkpoints/<run_id>/`
+
+## Draft run manifest
+
+Per `docs/schemas/experiment-manifest.md` training fields — known values
+filled in now, the rest marked `TBD` until launch. This is the actual
+manifest shape this run will emit to
+`s3://<bucket>/training/manifests/<run_id>.json`, not just a link to the
+schema doc:
+
+```json
+{
+  "run_id": "TBD",
+  "job_type": "training",
+  "git_commit_sha": "TBD",
+  "repo": "rmems/Dioscuri-Cloud",
+  "github_issue": "rmems/Dioscuri-Cloud#54",
+  "base_model": "TBD",
+  "model_slug": "TBD",
+  "trainer": "TBD",
+  "steps_configured": "TBD",
+  "steps_completed": null,
+  "telemetry_source": "synthetic",
+  "provider": "aws",
+  "region": "TBD",
+  "instance_type": "ml.g4dn.xlarge",
+  "gpu_type": "NVIDIA T4",
+  "dataset_uri": "TBD",
+  "checkpoint_uri": "TBD",
+  "start_time_utc": null,
+  "end_time_utc": null,
+  "estimated_cost_usd": 1.0,
+  "actual_cost_usd": null,
+  "artifact_uris": ["TBD"],
+  "teardown_confirmed": false,
+  "notes": "Readiness-record draft; not yet launched. See experiments/aws/sagemaker-training-smoke.md."
+}
+```
 
 ## Cost
 

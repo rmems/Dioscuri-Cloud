@@ -40,7 +40,7 @@ uninformative failure rather than a real go/no-go signal.
 - [ ] Provider / region / SKU selected — provider (`aws`) and SKU (`ml.g4dn.xlarge`) are chosen, but **region is still `TBD`** (see Planned run below); leave this unchecked until a concrete region is recorded, since the region gates whether the bucket/ECR image/requested capacity actually line up
 - [ ] Quota / availability checked — requires a real AWS account session against the training account
 - [ ] Terraform plan reviewed — PRs #67/#68 pass `terraform validate`/`terraform test` in CI, which is not the same as a reviewed `terraform plan` against real HCP state; leave unchecked until a real plan exists
-- [x] Artifact path selected: `s3://<bucket>/training/checkpoints/<run_id>/` per `docs/training/artifact-layout.md`
+- [ ] Artifact path selected — the *scheme* is fixed (`s3://<bucket>/training/checkpoints/<run_id>/` per `docs/training/artifact-layout.md`), but both `<bucket>` and `<run_id>` are still placeholders; leave unchecked until a concrete bucket and a concrete, unique `run_id` are recorded, so a later launch can't accidentally reuse a prefix and mix `step_<n>` data or overwrite `latest.json`
 - [x] Experiment manifest template prepared — run-specific draft below (not just a link to the generic schema), with known fields filled in and the rest marked `TBD`
 - [x] Teardown checklist linked (`docs/runbooks/teardown-checklist.md`) — see Teardown section below for why a SageMaker job's teardown looks different from a deletable resource
 - [ ] Max runtime / cost cap defined — proposed below, needs operator sign-off before launch

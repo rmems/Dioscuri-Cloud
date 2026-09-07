@@ -163,15 +163,25 @@ Prerequisites (all from this epic, not re-implemented here):
 - A tiny dataset already staged at `s3://<bucket>/training/datasets/<slug>/`.
 
 **Job name:** `TrainingJobName` must match `[a-zA-Z0-9](-*[a-zA-Z0-9]){0,62}`
-(no underscores, max 63 chars) — this repo's manifest-style `run_id`s (e.g.
-`20260523T141000Z_gcp_csv_re4_r0`) are **not** valid SageMaker job names.
-Derive a sanitized job name and keep the original `run_id` for S3 paths and
-the manifest:
+(start and end with an alphanumeric, only hyphens in between, max 63 chars)
+— this repo's manifest-style `run_id`s (e.g.
+`20260523T141000Z_gcp_csv_re4_r0`) are **not** valid SageMaker job names,
+and neither is every `run_id` this repo could produce in general (`.`,
+consecutive/trailing invalid characters, etc. all need handling, not just
+underscores). Truncating alone also risks two different long `run_id`s
+colliding on the same truncated prefix. Derive a sanitized, collision-safe
+job name and keep the original `run_id` (unsanitized) for S3 paths and the
+manifest:
 
 ```bash
-# Example derivation — replace underscores with hyphens, lowercase,
-# truncate to 63 chars. Keep RUN_ID (unsanitized) for S3 paths/manifest.
-SAGEMAKER_JOB_NAME="$(printf '%s' "${RUN_ID}" | tr '_' '-' | tr '[:upper:]' '[:lower:]' | cut -c1-63)"
+# Lowercase, collapse every run of non-alphanumeric characters to one
+# hyphen, strip leading/trailing hyphens, truncate the readable part to 53
+# chars, then append an 8-char hash of the full original RUN_ID — this
+# guarantees a valid start/end character, bounds the length to 63, and
+# keeps truncated-but-distinct run_ids from colliding on the same name.
+SAGEMAKER_JOB_NAME_BASE="$(printf '%s' "${RUN_ID}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+[ -n "${SAGEMAKER_JOB_NAME_BASE}" ] || SAGEMAKER_JOB_NAME_BASE="run"
+SAGEMAKER_JOB_NAME="$(printf '%s' "${SAGEMAKER_JOB_NAME_BASE}" | cut -c1-53)-$(printf '%s' "${RUN_ID}" | md5sum | cut -c1-8)"
 ```
 
 Launch (CLI; HCP-managed apply/state is for the Terraform prerequisites
@@ -217,12 +227,21 @@ aws sagemaker create-training-job \
 Monitor and confirm teardown:
 
 ```bash
-aws sagemaker describe-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
 # SageMaker training jobs are not "deleted" — they run to completion,
 # failure, or are stopped. Teardown evidence for a training job is its
 # terminal DescribeTrainingJob status (Completed/Failed/Stopped), not a
-# delete call.
-aws sagemaker stop-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"   # if it must be stopped early
+# delete call, and not the stop *request* itself: StopTrainingJob sends
+# SIGTERM and allows up to a 120-second graceful-shutdown window, so the
+# job is not yet in a terminal state when the stop call returns.
+aws sagemaker wait training-job-completed-or-stopped --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
+aws sagemaker describe-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}" --query 'TrainingJobStatus'
+
+# If it must be stopped early instead of waiting for natural completion:
+aws sagemaker stop-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
+aws sagemaker wait training-job-completed-or-stopped --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
+aws sagemaker describe-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}" --query 'TrainingJobStatus'
+# Confirms Stopped (or Failed) — this describe-training-job result, not
+# the stop-training-job call, is the teardown evidence.
 ```
 
 Before closing the run, verify both S3 prefixes actually received objects

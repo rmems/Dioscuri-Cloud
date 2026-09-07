@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Azure login (OIDC)
+        id: login
         uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -33,11 +34,20 @@ jobs:
 
       - name: Read-only identity/subscription inspection + report
         id: preflight
+        if: always()
         shell: bash
+        env:
+          LOGIN_OUTCOME: ${{ steps.login.outcome }}
         run: |
           set +e
-          az account show --output json > account.json
-          status=$?
+          if [ "$LOGIN_OUTCOME" = "success" ]; then
+            # Output is discarded, not saved to a file: this file would contain
+            # subscription/tenant identifiers, and only the exit code is used.
+            az account show --output json > /dev/null
+            status=$?
+          else
+            status=1
+          fi
           set -e
 
           if [ "$status" -eq 0 ]; then
@@ -54,6 +64,9 @@ jobs:
             echo "- Workflow run: \`${GITHUB_RUN_ID}\` (attempt ${GITHUB_RUN_ATTEMPT})"
             echo "- Triggered by: \`${GITHUB_ACTOR}\`"
             echo "- Status: **${result}**"
+            if [ "$LOGIN_OUTCOME" != "success" ]; then
+              echo "- The Azure OIDC login step did not succeed (outcome: \`${LOGIN_OUTCOME}\`); no Azure API call was made. See the login step's log for the token-exchange error."
+            fi
             echo
             echo "This workflow performed a read-only \`az account show\` only. No Azure"
             echo "resource was created, updated, or deleted. Subscription ID, tenant ID,"

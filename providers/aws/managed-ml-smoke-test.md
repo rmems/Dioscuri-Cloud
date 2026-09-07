@@ -138,6 +138,71 @@ Acceptable evidence:
 - AWS CLI output confirming deletion
 - Terraform destroy / HCP Terraform run link if Terraform was used
 
+## Training Job Path (GitHub #54)
+
+The sections above cover managed ML generically (inference or training).
+This section is the **explicit training-job path** — AWS primary, Azure ML
+only as a documented fallback if AWS is blocked (do not improvise
+SageMaker-shaped resources on Azure; that needs its own follow-on issue).
+
+Prerequisites (all from this epic, not re-implemented here):
+- S3 bucket from `terraform/envs/aws-training` (GitHub #47) — dataset input
+  and checkpoint/log output, laid out per `docs/training/artifact-layout.md`.
+- SageMaker execution role + ECR repository from
+  `terraform/modules/training_execution` (GitHub #61), with the training
+  image already built and pushed per `providers/aws/training-image-runbook.md`.
+- A tiny dataset already staged at `s3://<bucket>/training/datasets/<slug>/`.
+
+Launch (CLI; HCP-managed apply/state is for the Terraform prerequisites
+above, not for the job itself — SageMaker jobs are launched directly, not
+through `terraform apply`):
+
+```bash
+aws sagemaker create-training-job \
+  --training-job-name "<run_id>" \
+  --algorithm-specification TrainingImage="<ecr_repository_url>:<tag>",TrainingInputMode=File \
+  --role-arn "<execution_role_arn>" \
+  --input-data-config '[{
+    "ChannelName": "training",
+    "DataSource": {
+      "S3DataSource": {
+        "S3DataType": "S3Prefix",
+        "S3Uri": "s3://<bucket>/training/datasets/<slug>/",
+        "S3DataDistributionType": "FullyReplicated"
+      }
+    }
+  }]' \
+  --output-data-config S3OutputPath="s3://<bucket>/training/checkpoints/<run_id>/" \
+  --resource-config InstanceType=ml.g4dn.xlarge,InstanceCount=1,VolumeSizeInGB=50 \
+  --stopping-condition MaxRuntimeInSeconds=1800
+```
+
+Monitor and confirm teardown:
+
+```bash
+aws sagemaker describe-training-job --training-job-name "<run_id>"
+# SageMaker training jobs are not "deleted" — they run to completion,
+# failure, or are stopped. Teardown evidence for a training job is its
+# terminal DescribeTrainingJob status (Completed/Failed/Stopped), not a
+# delete call.
+aws sagemaker stop-training-job --training-job-name "<run_id>"   # if it must be stopped early
+```
+
+Write the run manifest (`docs/schemas/experiment-manifest.md` training
+fields) to `s3://<bucket>/training/manifests/<run_id>.json` with `job_type
+= training`, `trainer`, `steps_configured`/`steps_completed`,
+`dataset_uri`, and `checkpoint_uri` populated from the actual job.
+
+### Azure ML fallback (only if AWS is blocked)
+
+Do not reuse the SageMaker role/ECR/S3 resources above as if they were
+Azure resources. A follow-on issue must define, separately: an Azure Blob
+container matching `docs/training/artifact-layout.md`, an Azure Container
+Registry image, a managed identity/Azure ML compute job, and the
+Azure-equivalent dependencies replacing #47/#61's AWS artifacts. Until that
+follow-on issue exists, treat Azure as credit inventory only for this path
+(see `docs/credits/inventory.md`).
+
 ## Post-Run Record
 
 Before closing the smoke test:

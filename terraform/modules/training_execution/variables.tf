@@ -25,6 +25,11 @@ variable "ecr_untagged_image_expiry_days" {
   description = "Days after which untagged ECR images are expired by the lifecycle policy."
   type        = number
   default     = 14
+
+  validation {
+    condition     = var.ecr_untagged_image_expiry_days >= 1 && var.ecr_untagged_image_expiry_days == floor(var.ecr_untagged_image_expiry_days)
+    error_message = "ecr_untagged_image_expiry_days must be a positive whole number (ECR lifecycle policies require a non-zero positive integer countNumber)."
+  }
 }
 
 variable "tags" {

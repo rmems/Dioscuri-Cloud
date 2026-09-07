@@ -1,0 +1,22 @@
+providers/aws/managed-ml-smoke-test.md
+  s_8c6bd430eeef76::t_c63ed04cf238c5 187-191,213
+experiments/aws/sagemaker-training-smoke.md
+  s_8c6bd430eeef76::t_78bb688069f60e 59-95
+  s_8c6bd430eeef76::t_6afa38755b7fc9 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1f2baa6e856167295655191f4c45d2ee526c230c",
+  "prompts": {},
+  "sessions": {
+    "s_8c6bd430eeef76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "041adaa9-efa3-436f-994e-e595a09bceb8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Raul Montoya Cardenas <montoyaraul34@gmail.com>"
+    }
+  }
+}

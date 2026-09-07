@@ -10,9 +10,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1 \
     PYTHONUNBUFFERED=1
 
-# hadolint ignore=DL3008 -- base OS packages intentionally track the latest
-# security patches available for the pinned base image tag/digest above;
-# the base image tag is the reproducibility control, not individual apt versions.
+# Base OS packages intentionally track the latest security patches available
+# for the pinned base image tag/digest above; the base image tag is the
+# reproducibility control here, not individual apt package versions.
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python${PYTHON_VERSION} \
         python3-pip \
@@ -38,7 +39,7 @@ RUN chmod +x /opt/training/entrypoint.sh && chown -R trainer:trainer /opt/traini
 # No dataset/checkpoint/weight files are baked into this image — training
 # code and datasets are staged at runtime from S3 (docs/training/artifact-layout.md).
 
-USER trainer
+USER 1000
 
 ENTRYPOINT ["/opt/training/entrypoint.sh"]
 CMD ["--help"]

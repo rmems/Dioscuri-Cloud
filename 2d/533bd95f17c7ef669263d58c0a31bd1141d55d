@@ -1,0 +1,19 @@
+.github/workflows/azure-oidc-preflight.yml
+  s_8c6bd430eeef76::t_0ebcc225f48cb1 28,37,39-40,43-50,67-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2d533bd95f17c7ef669263d58c0a31bd1141d55d",
+  "prompts": {},
+  "sessions": {
+    "s_8c6bd430eeef76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "041adaa9-efa3-436f-994e-e595a09bceb8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Raul Montoya Cardenas <montoyaraul34@gmail.com>"
+    }
+  }
+}

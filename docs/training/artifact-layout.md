@@ -62,6 +62,8 @@ manifest individually:
       "job_type": "training",
       "provider": "aws",
       "instance_type": "g4dn.xlarge",
+      "trainer": "synthetic-trainer",
+      "base_model": "synthetic/example-7b",
       "steps_completed": 10,
       "final_loss": 1.234,
       "wall_time_seconds": 300,
@@ -80,6 +82,16 @@ re-run that reuses the same `run_id` **replaces** the existing entry in
 place — never append a second entry for the same `run_id`. The file is
 append-only only in the sense that a genuinely **new** `run_id` gets a new
 entry; writers must read-modify-write (not blind-append) to enforce this.
+
+**Concurrency caveat:** a plain read-modify-write to a shared `index.json`
+races if two runs finish close together — the second writer can overwrite
+the first's new entry with a copy that doesn't include it. For the current
+one-smoke-at-a-time execution model (`docs/runbooks/gpu-smoke-test-readiness.md`)
+this is a low-probability, low-stakes gap: `training/manifests/<run_id>.json`
+remains the source of truth per run, and `index.json` can always be
+rebuilt from those. If concurrent writers become common, use S3 conditional
+writes (`If-Match` on the object's ETag, retry-on-conflict) rather than a
+bare read-modify-write.
 
 See `docs/training/experiment-tracking.md` for how to use these to compare
 two runs.

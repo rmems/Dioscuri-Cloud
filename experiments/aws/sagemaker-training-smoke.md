@@ -34,16 +34,18 @@ uninformative failure rather than a real go/no-go signal.
 
 ## GPU Smoke-Test Readiness Checklist (docs/runbooks/gpu-smoke-test-readiness.md)
 
-- [x] Local baseline completed — not applicable to a managed SageMaker job (no local GPU code path to exercise first; the container itself is the code path, and its `--help`/dry-run behavior is documented in `training/docker/README.md`)
+- [ ] Local baseline completed — **not yet done.** `training/docker/README.md` only documents `--help`/dry-run *behavior*; the readiness checklist requires the exact code path to actually be exercised locally with real output, which hasn't happened. Do not treat the paid SageMaker launch as the first real exercise of this container.
 - [ ] No-GPU object storage smoke completed — blocked on #47 bucket existing
 - [x] Cost estimate recorded (below)
-- [x] Provider / region / SKU selected (below)
+- [ ] Provider / region / SKU selected — provider (`aws`) and SKU (`ml.g4dn.xlarge`) are chosen, but **region is still `TBD`** (see Planned run below); leave this unchecked until a concrete region is recorded, since the region gates whether the bucket/ECR image/requested capacity actually line up
 - [ ] Quota / availability checked — requires a real AWS account session against the training account
-- [x] Terraform plan reviewed — PRs #67/#68 CI-validated (`terraform validate` + `terraform test`); real `terraform plan` against HCP pending workspace creation
+- [ ] Terraform plan reviewed — PRs #67/#68 pass `terraform validate`/`terraform test` in CI, which is not the same as a reviewed `terraform plan` against real HCP state; leave unchecked until a real plan exists
 - [x] Artifact path selected: `s3://<bucket>/training/checkpoints/<run_id>/` per `docs/training/artifact-layout.md`
 - [x] Experiment manifest template prepared (`docs/schemas/experiment-manifest.md`, training fields)
 - [x] Teardown checklist linked (`docs/runbooks/teardown-checklist.md`) — see Teardown section below for why a SageMaker job's teardown looks different from a deletable resource
 - [ ] Max runtime / cost cap defined — proposed below, needs operator sign-off before launch
+
+**Review by 2026-10-07** (or sooner, whenever #67/#68 merge and are applied) — re-check this record and its blockers rather than letting it go stale.
 
 ## Planned run
 

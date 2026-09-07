@@ -145,21 +145,51 @@ This section is the **explicit training-job path** — AWS primary, Azure ML
 only as a documented fallback if AWS is blocked (do not improvise
 SageMaker-shaped resources on Azure; that needs its own follow-on issue).
 
+**S3 prefix override for this path:** the generic "Artifact destination
+chosen" prerequisite above (`dioscuri-cloud/smoke-tests/aws/<date>/<run_id>/`)
+does **not** apply here — training runs use `docs/training/artifact-layout.md`'s
+`training/` prefix scheme exclusively (`training/datasets/`,
+`training/checkpoints/`, `training/logs/`, `training/manifests/`). The
+generic scheme remains for non-training (inference-only) smokes.
+
 Prerequisites (all from this epic, not re-implemented here):
 - S3 bucket from `terraform/envs/aws-training` (GitHub #47) — dataset input
   and checkpoint/log output, laid out per `docs/training/artifact-layout.md`.
+  **Must be in the same AWS region as the training job** — SageMaker
+  requires input/output S3 locations to be in the job's region.
 - SageMaker execution role + ECR repository from
   `terraform/modules/training_execution` (GitHub #61), with the training
   image already built and pushed per `providers/aws/training-image-runbook.md`.
 - A tiny dataset already staged at `s3://<bucket>/training/datasets/<slug>/`.
 
+**Job name:** `TrainingJobName` must match `[a-zA-Z0-9](-*[a-zA-Z0-9]){0,62}`
+(no underscores, max 63 chars) — this repo's manifest-style `run_id`s (e.g.
+`20260523T141000Z_gcp_csv_re4_r0`) are **not** valid SageMaker job names.
+Derive a sanitized job name and keep the original `run_id` for S3 paths and
+the manifest:
+
+```bash
+# Example derivation — replace underscores with hyphens, lowercase,
+# truncate to 63 chars. Keep RUN_ID (unsanitized) for S3 paths/manifest.
+SAGEMAKER_JOB_NAME="$(printf '%s' "${RUN_ID}" | tr '_' '-' | tr '[:upper:]' '[:lower:]' | cut -c1-63)"
+```
+
 Launch (CLI; HCP-managed apply/state is for the Terraform prerequisites
 above, not for the job itself — SageMaker jobs are launched directly, not
-through `terraform apply`):
+through `terraform apply`). `CheckpointConfig` — not `OutputDataConfig` —
+is what continuously syncs checkpoint data during training;
+`OutputDataConfig` only uploads a final `model.tar.gz` at job end. Neither
+one automatically produces `docs/training/artifact-layout.md`'s
+`step_<n>/`/`latest.json` shape or `training/logs/<run_id>/metrics.json` —
+the training container itself must write those (into `CheckpointConfig`'s
+`LocalPath`, default `/opt/ml/checkpoints/`, for checkpoints; via an
+explicit S3 `PutObject` call for `metrics.json`, since SageMaker's
+CloudWatch integration does not write to a repo-defined S3 path):
 
 ```bash
 aws sagemaker create-training-job \
-  --training-job-name "<run_id>" \
+  --region "<region>" \
+  --training-job-name "${SAGEMAKER_JOB_NAME}" \
   --algorithm-specification TrainingImage="<ecr_repository_url>:<tag>",TrainingInputMode=File \
   --role-arn "<execution_role_arn>" \
   --input-data-config '[{
@@ -172,26 +202,39 @@ aws sagemaker create-training-job \
       }
     }
   }]' \
-  --output-data-config S3OutputPath="s3://<bucket>/training/checkpoints/<run_id>/" \
+  --output-data-config S3OutputPath="s3://<bucket>/training/checkpoints/<run_id>/final/" \
+  --checkpoint-config S3Uri="s3://<bucket>/training/checkpoints/<run_id>/",LocalPath="/opt/ml/checkpoints" \
   --resource-config InstanceType=ml.g4dn.xlarge,InstanceCount=1,VolumeSizeInGB=50 \
-  --stopping-condition MaxRuntimeInSeconds=1800
+  --stopping-condition MaxRuntimeInSeconds=1800 \
+  --tags Key=owner,Value=rmems Key=github,Value=54 Key=pr,Value=<pr-number> Key=teardown_by,Value=<same-day>
 ```
 
 Monitor and confirm teardown:
 
 ```bash
-aws sagemaker describe-training-job --training-job-name "<run_id>"
+aws sagemaker describe-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
 # SageMaker training jobs are not "deleted" — they run to completion,
 # failure, or are stopped. Teardown evidence for a training job is its
 # terminal DescribeTrainingJob status (Completed/Failed/Stopped), not a
 # delete call.
-aws sagemaker stop-training-job --training-job-name "<run_id>"   # if it must be stopped early
+aws sagemaker stop-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"   # if it must be stopped early
+```
+
+Before closing the run, verify both S3 prefixes actually received objects
+(checkpoint sync and the container's own `metrics.json`/`latest.json`
+writes are not guaranteed by the CLI flags alone — confirm the training
+code did its part):
+
+```bash
+aws s3 ls "s3://<bucket>/training/checkpoints/<run_id>/" --recursive
+aws s3 ls "s3://<bucket>/training/logs/<run_id>/" --recursive
 ```
 
 Write the run manifest (`docs/schemas/experiment-manifest.md` training
-fields) to `s3://<bucket>/training/manifests/<run_id>.json` with `job_type
-= training`, `trainer`, `steps_configured`/`steps_completed`,
-`dataset_uri`, and `checkpoint_uri` populated from the actual job.
+fields) to `s3://<bucket>/training/manifests/<run_id>.json` (using the
+original, unsanitized `run_id`) with `job_type = training`, `trainer`,
+`steps_configured`/`steps_completed`, `dataset_uri`, and `checkpoint_uri`
+populated from the actual job.
 
 ### Azure ML fallback (only if AWS is blocked)
 

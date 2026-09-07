@@ -216,8 +216,8 @@ aws sagemaker create-training-job \
       }
     }
   }]' \
-  --output-data-config S3OutputPath="s3://<bucket>/training/checkpoints/<run_id>/final/" \
-  --checkpoint-config S3Uri="s3://<bucket>/training/checkpoints/<run_id>/",LocalPath="/opt/ml/checkpoints" \
+  --output-data-config S3OutputPath="s3://<bucket>/training/checkpoints/${RUN_ID}/final/" \
+  --checkpoint-config S3Uri="s3://<bucket>/training/checkpoints/${RUN_ID}/",LocalPath="/opt/ml/checkpoints" \
   --resource-config InstanceType=ml.g4dn.xlarge,InstanceCount=1,VolumeSizeInGB=50 \
   --stopping-condition MaxRuntimeInSeconds=1800 \
   --environment RUN_ID="${RUN_ID}",METRICS_S3_URI="s3://<bucket>/training/logs/${RUN_ID}/metrics.json" \
@@ -250,8 +250,8 @@ writes are not guaranteed by the CLI flags alone — confirm the training
 code did its part):
 
 ```bash
-aws s3 ls "s3://<bucket>/training/checkpoints/<run_id>/" --recursive
-aws s3 ls "s3://<bucket>/training/logs/<run_id>/" --recursive
+aws s3 ls "s3://<bucket>/training/checkpoints/${RUN_ID}/" --recursive
+aws s3 ls "s3://<bucket>/training/logs/${RUN_ID}/" --recursive
 ```
 
 Write the run manifest (`docs/schemas/experiment-manifest.md` training

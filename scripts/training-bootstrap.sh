@@ -89,18 +89,16 @@ command -v docker >/dev/null 2>&1 || fail "docker not found. Install Docker firs
 if [ -n "${TRAINING_ECR_REPOSITORY_URL:-}" ]; then
   IMAGE_TAG="${TRAINING_IMAGE_TAG:-latest}"
   REGISTRY_HOST="${TRAINING_ECR_REPOSITORY_URL%%/*}"
-  # Let the AWS CLI resolve region normally (AWS_REGION/AWS_DEFAULT_REGION,
-  # then the active profile's own `region` setting, then instance metadata)
-  # rather than requiring an env var — an AWS_PROFILE with a configured
-  # region is a valid, common setup that doesn't set either env var.
-  ECR_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-}}"
-  if [ -n "${ECR_REGION}" ]; then
-    ECR_LOGIN_PASSWORD="$(aws ecr get-login-password --region "${ECR_REGION}")" ||
-      fail "aws ecr get-login-password --region ${ECR_REGION} failed. Confirm ecr:GetAuthorizationToken on your IAM identity."
-  else
-    ECR_LOGIN_PASSWORD="$(aws ecr get-login-password)" ||
-      fail "aws ecr get-login-password failed. Confirm ecr:GetAuthorizationToken on your IAM identity, and that a region is resolvable (AWS_REGION, AWS_DEFAULT_REGION, or the active profile's region setting)."
-  fi
+  # ECR auth tokens are region-scoped: a login password obtained for the
+  # caller's ambient AWS_REGION/profile region fails if the registry itself
+  # lives in a different region. The region is always embedded and
+  # authoritative in the ECR hostname (<account>.dkr.ecr.<region>.amazonaws.com[.cn]),
+  # so parse it from there rather than trusting the caller's default.
+  ECR_REGION="$(printf '%s' "${REGISTRY_HOST}" | awk -F. '{print $4}')"
+  [ -n "${ECR_REGION}" ] ||
+    fail "Could not parse an AWS region from TRAINING_ECR_REPOSITORY_URL (${TRAINING_ECR_REPOSITORY_URL}). Expected an ECR hostname like <account>.dkr.ecr.<region>.amazonaws.com/<repo>."
+  ECR_LOGIN_PASSWORD="$(aws ecr get-login-password --region "${ECR_REGION}")" ||
+    fail "aws ecr get-login-password --region ${ECR_REGION} failed. Confirm ecr:GetAuthorizationToken on your IAM identity."
   printf '%s' "${ECR_LOGIN_PASSWORD}" | docker login --username AWS --password-stdin "${REGISTRY_HOST}" >/dev/null ||
     fail "docker login to ${REGISTRY_HOST} failed."
   docker pull "${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG}" ||

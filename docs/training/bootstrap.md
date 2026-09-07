@@ -28,9 +28,11 @@ runs.
 3. **S3 training bucket probe** — lists the `training/` prefix of the
    bucket named by `TRAINING_BUCKET_NAME` (docs/training/artifact-layout.md).
 4. **Training image** — if `TRAINING_ECR_REPOSITORY_URL` is set, logs
-   Docker in to that ECR registry (via `aws ecr get-login-password`; AWS
-   credentials alone do not authenticate the Docker client) and pulls
-   `:TRAINING_IMAGE_TAG` (default `latest`). Otherwise builds
+   Docker in to that ECR registry (via `aws ecr get-login-password`, using
+   the region parsed out of the URL itself — ECR auth tokens are
+   region-scoped, so the caller's own default region is not used even if
+   it differs; AWS credentials alone do not authenticate the Docker
+   client) and pulls `:TRAINING_IMAGE_TAG` (default `latest`). Otherwise builds
    `training/docker/` locally as `dioscuri-cloud-training:bootstrap-check`
    — and fails with a specific, actionable message (not a generic build
    error) if that directory doesn't exist yet in this checkout, which is

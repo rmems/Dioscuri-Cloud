@@ -38,7 +38,9 @@ resource "aws_iam_role_policy_attachment" "extra" {
 }
 
 resource "aws_security_group" "node" {
-  name        = "${var.name}-sg"
+  # name_prefix lets AWS append a unique suffix so two stacks sharing a
+  # vpc_id and var.name do not collide on InvalidGroup.Duplicate.
+  name_prefix = "${var.name}-sg-"
   description = "SSH access for ${var.name}, restricted to operator_cidrs."
   vpc_id      = var.vpc_id
 
@@ -59,6 +61,10 @@ resource "aws_security_group" "node" {
   }
 
   tags = var.tags
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_key_pair" "node" {

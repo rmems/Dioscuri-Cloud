@@ -27,13 +27,23 @@ docker run --rm dioscuri-cloud-training:local --help
 ```
 
 On a GPU host, the entrypoint runs `nvidia-smi` as a dry-run check before
-executing your command. `train.py` below is a placeholder for your own
-training script — the image ships no training code; mount or `COPY` it in,
-or stage it from S3 at container start, before running this:
+executing your command. The image ships no training script — use these
+commands, which work out of the box, to confirm the driver and torch CUDA
+build:
+
+```bash
+docker run --rm --gpus all dioscuri-cloud-training:local nvidia-smi
+docker run --rm --gpus all dioscuri-cloud-training:local \
+  python3 -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+```
+
+Real training code is not baked in. Mount it, `COPY` it in a downstream
+image, or stage it from S3 at container start (see
+`docs/training/artifact-layout.md`), then pass your script as the command:
 
 ```bash
 docker run --rm --gpus all -v "$(pwd)":/workspace -w /workspace \
-  dioscuri-cloud-training:local python3 train.py --steps 10
+  dioscuri-cloud-training:local python3 your_train.py --steps 10
 ```
 
 ## Build and push to ECR

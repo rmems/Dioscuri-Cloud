@@ -44,13 +44,12 @@ variable "ssh_public_key" {
 }
 
 variable "operator_cidrs" {
-  description = "List of operator source CIDRs allowed to reach SSH. REQUIRED: set to the operator's actual VPN/office CIDRs; the default is a non-routable example and will not match real operator IPs."
+  description = "List of operator source CIDRs allowed to reach SSH. REQUIRED: no default — set to the operator's actual VPN/office CIDRs. The placeholder 10.0.0.0/8 is rejected (same guardrail as terraform/envs/oracle-dev)."
   type        = list(string)
-  default     = ["10.0.0.0/8"]
 
   validation {
     condition     = length(var.operator_cidrs) > 0 && !contains(var.operator_cidrs, "10.0.0.0/8")
-    error_message = "operator_cidrs must be set to real operator VPN/office CIDRs; the default 10.0.0.0/8 is a non-routable example and will lock out all access."
+    error_message = "operator_cidrs must be set to real operator VPN/office CIDRs; 10.0.0.0/8 is a non-routable example and will lock out all access."
   }
 }
 

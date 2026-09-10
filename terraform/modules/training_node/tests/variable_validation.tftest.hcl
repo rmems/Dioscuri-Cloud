@@ -1,6 +1,6 @@
 # Tests for the validation blocks in variables.tf: instance_count (whole
-# number, 0-2) and operator_cidrs (same intentional-fail-on-default pattern
-# as terraform/envs/oracle-dev/tests/operator_cidrs_validation.tftest.hcl).
+# number, 0-2) and operator_cidrs (required; rejects the 10.0.0.0/8
+# placeholder, matching terraform/envs/oracle-dev).
 #
 # Run with: terraform -chdir=terraform/modules/training_node test
 #           (requires Terraform >= 1.7 for mock_provider support)
@@ -101,8 +101,8 @@ run "valid_operator_cidrs_pass" {
 # ─────────────────────────────────────────────────────────────────────────────
 
 run "rejects_default_placeholder_cidr" {
-  # Intentional guardrail (matches oracle-dev precedent): the placeholder
-  # default must fail so a caller can't silently use it.
+  # Guardrail (matches oracle-dev): even if a caller passes the old
+  # placeholder explicitly, it must fail rather than open SSH to 10/8.
   command = plan
 
   variables {

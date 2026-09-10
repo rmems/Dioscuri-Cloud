@@ -17,17 +17,18 @@ consumed by #53 "Bounded GPU training node on AWS").
 - `instance_count` defaults to `0`. Instantiating this module with no
   overrides creates the IAM/security-group primitives but **zero compute**.
   Set `instance_count` explicitly (max 2) to launch nodes.
-- `operator_cidrs` has no usable default — the placeholder `10.0.0.0/8`
-  fails validation, forcing the caller to set real CIDRs.
+- `operator_cidrs` is required (no default). The placeholder `10.0.0.0/8`
+  is rejected, matching the `oracle-dev` guardrail — callers must pass
+  real VPN/office CIDRs.
 - Before setting `instance_count > 0`, complete
   `docs/runbooks/gpu-smoke-test-readiness.md`.
 
 ## Inputs
 
 See `variables.tf`. Notable required inputs (no default): `ami_id`,
-`subnet_id`, `vpc_id`. `tags` is a passthrough map — this module applies
-whatever is given; callers should include `owner`, `github`, `pr`, and
-`teardown_by` per `docs/credits/usage-policy.md`.
+`subnet_id`, `vpc_id`, `operator_cidrs`. `tags` is a passthrough map —
+this module applies whatever is given; callers should include `owner`,
+`github`, `pr`, and `teardown_by` per `docs/credits/usage-policy.md`.
 
 ## Example
 

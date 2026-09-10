@@ -13,11 +13,14 @@ if [ "${1:-}" = "--help" ] || [ "$#" -eq 0 ]; then
 Usage: docker run ... <training-entrypoint-args>
 
 This image runs a GPU dry-run check (nvidia-smi) on start, then execs the
-given command. Pass your training script/module as arguments, e.g.:
+given command. It ships no training script. Confirm the GPU/torch stack
+with commands that work out of the box:
 
-  docker run --gpus all <image> python3 train.py --steps 10
+  docker run --gpus all <image> nvidia-smi
+  docker run --gpus all <image> python3 -c "import torch; print(torch.cuda.is_available())"
 
-See providers/aws/training-image-runbook.md for build/push and
+Mount, COPY, or S3-stage your training code later, then pass it as the
+command. See providers/aws/training-image-runbook.md for build/push and
 EC2/SageMaker usage.
 EOF
   exit 0

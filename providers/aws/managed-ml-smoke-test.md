@@ -152,15 +152,35 @@ does **not** apply here — training runs use `docs/training/artifact-layout.md`
 `training/checkpoints/`, `training/logs/`, `training/manifests/`). The
 generic scheme remains for non-training (inference-only) smokes.
 
-Prerequisites (all from this epic, not re-implemented here):
-- S3 bucket from `terraform/envs/aws-training` (GitHub #47) — dataset input
-  and checkpoint/log output, laid out per `docs/training/artifact-layout.md`.
-  **Must be in the same AWS region as the training job** — SageMaker
-  requires input/output S3 locations to be in the job's region.
-- SageMaker execution role + ECR repository from
-  `terraform/modules/training_execution` (GitHub #61), with the training
-  image already built and pushed per `providers/aws/training-image-runbook.md`.
-- A tiny dataset already staged at `s3://<bucket>/training/datasets/<slug>/`.
+Prerequisites (all from this epic, not re-implemented here). **None of
+these paths exist on this branch or on `main` yet** — they live only on
+still-open sibling PRs. Do not invent a merge order among them, and do
+not treat any of them as applied:
+
+- S3 training bucket (`terraform/envs/aws-training`, GitHub #47) — open
+  as [PR #67](https://github.com/rmems/Dioscuri-Cloud/pull/67). Dataset
+  input and checkpoint/log output, laid out per
+  `docs/training/artifact-layout.md`. **Must be in the same AWS region
+  as the training job** — SageMaker requires input/output S3 locations
+  to be in the job's region. **No `terraform apply` yet; no live bucket.**
+- SageMaker execution role + ECR repository
+  (`terraform/modules/training_execution`, GitHub #61) plus the CUDA
+  image / `providers/aws/training-image-runbook.md` — open as
+  [PR #68](https://github.com/rmems/Dioscuri-Cloud/pull/68). **Not on
+  this branch; not applied; no live role, ECR repo, or pushed image.**
+- Fail-closed training preflight (`scripts/training-bootstrap.sh`,
+  GitHub #62) — open as
+  [PR #71](https://github.com/rmems/Dioscuri-Cloud/pull/71). Optional
+  once the bucket/image exist; this launch path does not require #71
+  to merge first, and the script is not present here.
+- A tiny dataset already staged at `s3://<bucket>/training/datasets/<slug>/`
+  — blocked until #67 is merged **and** applied.
+
+Until those live ARNs/URIs exist, do **not** run
+`aws sagemaker create-training-job`. Placeholder strings in the command
+below (`<execution_role_arn>`, `<ecr_repository_url>`, `<bucket>`) are
+not real values and must not be substituted from another account or
+from a guessed ARN.
 
 **Job name:** `TrainingJobName` must match `[a-zA-Z0-9](-*[a-zA-Z0-9]){0,62}`
 (start and end with an alphanumeric, only hyphens in between, max 63 chars)
@@ -192,19 +212,24 @@ SAGEMAKER_JOB_NAME="$(printf '%s' "${SAGEMAKER_JOB_NAME_BASE}" | cut -c1-53)-$(p
 
 Launch (CLI; HCP-managed apply/state is for the Terraform prerequisites
 above, not for the job itself — SageMaker jobs are launched directly, not
-through `terraform apply`). `CheckpointConfig` — not `OutputDataConfig` —
-is what continuously syncs checkpoint data during training;
-`OutputDataConfig` only uploads a final `model.tar.gz` at job end. Neither
-one automatically produces `docs/training/artifact-layout.md`'s
-`step_<n>/`/`latest.json` shape or `training/logs/<run_id>/metrics.json` —
-the training container itself must write those (into `CheckpointConfig`'s
-`LocalPath`, default `/opt/ml/checkpoints/`, for checkpoints; via an
-explicit S3 `PutObject` call for `metrics.json`, since SageMaker's
-CloudWatch integration does not write to a repo-defined S3 path). The
-container cannot reconstruct the original `RUN_ID` from
-`SAGEMAKER_JOB_NAME` (lowercased and hyphenated above) — pass the real
-`run_id` and the exact metrics destination in explicitly via
-`--environment`:
+through `terraform apply`. This PR does not apply those modules).
+`CheckpointConfig` is **required** if the container writes checkpoints
+under `/opt/ml/checkpoints`: SageMaker mounts and syncs that local path
+**only** when `CheckpointConfig` is set. Do not document or assume
+`/opt/ml/checkpoints` as a SageMaker-provided directory unless
+`--checkpoint-config` is present on the job. `OutputDataConfig` does
+**not** mount that path and only uploads a final `model.tar.gz` at job
+end. Neither flag automatically produces
+`docs/training/artifact-layout.md`'s `step_<n>/`/`latest.json` shape or
+`training/logs/<run_id>/metrics.json` — the training container itself
+must write those (into `CheckpointConfig.LocalPath`, here
+`/opt/ml/checkpoints`, for checkpoints; via an explicit S3 `PutObject`
+for `metrics.json`, since SageMaker CloudWatch Logs do not write to a
+repo-defined S3 path). The #68 image ships no `train.py` and does not
+create those objects by itself. The container cannot reconstruct the
+original `RUN_ID` from `SAGEMAKER_JOB_NAME` (lowercased and hyphenated
+above) — pass the real `run_id` and the exact metrics destination in
+explicitly via `--environment`:
 
 ```bash
 aws sagemaker create-training-job \
@@ -272,9 +297,10 @@ Do not reuse the SageMaker role/ECR/S3 resources above as if they were
 Azure resources. A follow-on issue must define, separately: an Azure Blob
 container matching `docs/training/artifact-layout.md`, an Azure Container
 Registry image, a managed identity/Azure ML compute job, and the
-Azure-equivalent dependencies replacing #47/#61's AWS artifacts. Until that
-follow-on issue exists, treat Azure as credit inventory only for this path
-(see `docs/credits/inventory.md`).
+Azure-equivalent dependencies replacing #47/#61's AWS artifacts (those
+AWS pieces themselves are still only on open PRs #67/#68, not applied).
+Until that follow-on issue exists, treat Azure as credit inventory only
+for this path (see `docs/credits/inventory.md`).
 
 ## Post-Run Record
 

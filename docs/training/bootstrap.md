@@ -32,11 +32,18 @@ runs.
    the region parsed out of the URL itself — ECR auth tokens are
    region-scoped, so the caller's own default region is not used even if
    it differs; AWS credentials alone do not authenticate the Docker
-   client) and pulls `:TRAINING_IMAGE_TAG` (default `latest`). Otherwise builds
-   `training/docker/` locally as `dioscuri-cloud-training:bootstrap-check`
-   — and fails with a specific, actionable message (not a generic build
-   error) if that directory doesn't exist yet in this checkout, which is
-   expected before Issue #61 lands.
+   client) and pulls `:TRAINING_IMAGE_TAG` (default `latest`). Otherwise
+   builds `training/docker/` locally as
+   `dioscuri-cloud-training:bootstrap-check`. That directory is the #61
+   image from PR #68 (`feature/training-image-modules-61`) — this
+   bootstrap consumes it and does not ship a parallel Dockerfile. If the
+   directory is missing and no ECR URL is set, the script fails closed
+   with that blocker (merge/check out #68, or set
+   `TRAINING_ECR_REPOSITORY_URL`). After pull or build, it runs the #68
+   CPU smokes from `training/docker/README.md`: `docker run --rm <image>
+   --help` and `docker run --rm <image> python3 -c "import torch; ..."`.
+   The image uses Ubuntu 22.04's default `python3` (not `python3.11`) and
+   ships no `train.py` — do not smoke with those.
 5. **Optional dry-run** — if `TRAINING_GPU_INSTANCE_ID` is set, dispatches
    `nvidia-smi` to it via `ssm:SendCommand` **and blocks on
    `aws ssm wait command-executed`** until it actually finishes, rather than
@@ -82,7 +89,7 @@ via an SSO/credential-process bridge you already use).
 | `TF_TOKEN_app_terraform_io` (or `terraform login`) | Yes | Local HCP Terraform CLI credentials. Never committed. |
 | `TRAINING_BUCKET_NAME` | Yes | The `bucket_name` value set in the `dioscuri-cloud-aws-training` HCP workspace — copy it into your local shell; this script does not fetch it from HCP. Globally unique; never hardcoded in this repo. |
 | `TRAINING_EXPECTED_AWS_ACCOUNT_ID` | No | If set, step 2 fails hard when the active credentials resolve to a different account. Never commit an account ID to this repo — export it locally only. |
-| `TRAINING_ECR_REPOSITORY_URL`, `TRAINING_IMAGE_TAG` | No | `ecr_repository_url` output of `terraform/modules/training_execution` once #61's image is pushed (`providers/aws/training-image-runbook.md`). |
+| `TRAINING_ECR_REPOSITORY_URL`, `TRAINING_IMAGE_TAG` | No | `ecr_repository_url` output of `terraform/modules/training_execution` once the #61/#68 image is pushed (`providers/aws/training-image-runbook.md` on `feature/training-image-modules-61`). |
 | `TRAINING_GPU_INSTANCE_ID` | No | An EC2 instance ID once #53 provisions one via `terraform/modules/training_node`. |
 | `TRAINING_SAGEMAKER_JOB_NAME` | No | A SageMaker training job name once #54 launches one. |
 

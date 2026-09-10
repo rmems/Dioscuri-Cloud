@@ -15,6 +15,18 @@ fail() {
   exit 1
 }
 
+# #68 (training/docker/README.md) working smokes: default python3, no baked
+# train.py, no GPU required. Do not use python3.11 or `python3 train.py`.
+smoke_training_image() {
+  local image="$1"
+  docker run --rm "${image}" --help >/dev/null ||
+    fail "Training image ${image} failed the --help smoke. The #61/#68 image ships no train.py — see training/docker/README.md."
+  docker run --rm "${image}" \
+    python3 -c "import torch; print(torch.__version__, torch.cuda.is_available())" ||
+    fail "Training image ${image} failed the python3/torch smoke. The #61/#68 image uses Ubuntu 22.04 default python3 (not python3.11) and ships no train.py. See training/docker/README.md."
+  echo "OK: ${image} passed --help and python3/torch smokes (no GPU required)."
+}
+
 # 1. HCP: confirm Terraform Cloud auth is configured AND can actually reach
 #    org Dioscuri-Cloud, workspace dioscuri-cloud-aws-training
 #    (terraform/envs/aws-training) — not just that a token/file exists.
@@ -74,16 +86,17 @@ fi
 
 # 3. S3: probe the training bucket's training/ prefix (docs/training/artifact-layout.md).
 log "3/5 S3 training bucket probe"
-: "${TRAINING_BUCKET_NAME:?TRAINING_BUCKET_NAME is required — set it to the bucket_name from terraform/envs/aws-training (see docs/hcp/provider-variable-map.md). Never hardcode it in a script or commit it.}"
+[ -n "${TRAINING_BUCKET_NAME:-}" ] ||
+  fail "TRAINING_BUCKET_NAME is required — set it to the bucket_name from terraform/envs/aws-training (see docs/hcp/provider-variable-map.md). Never hardcode it in a script or commit it."
 aws s3api list-objects-v2 --bucket "${TRAINING_BUCKET_NAME}" --prefix "training/" --max-items 1 >/dev/null 2>&1 ||
   fail "Could not list s3://${TRAINING_BUCKET_NAME}/training/. Confirm the bucket has been applied (dioscuri-cloud-aws-training workspace) and your IAM identity has s3:ListBucket on it."
 echo "OK: s3://${TRAINING_BUCKET_NAME}/training/ is reachable."
 
 # 4. Docker: pull from ECR (with an explicit login first — AWS credentials
 #    alone do not authenticate the Docker client) or build training/docker/
-#    locally. Fails with a clear, specific blocker if neither is possible —
-#    training/docker/ lands with Issue #61 and may not exist yet on a
-#    checkout that predates it.
+#    locally (the #61/#68 image — do not invent a parallel Dockerfile here).
+#    After pull/build, run the #68 CPU smokes (--help and python3/torch).
+#    Fails with a clear blocker if the image path is missing.
 log "4/5 Training image"
 command -v docker >/dev/null 2>&1 || fail "docker not found. Install Docker first."
 if [ -n "${TRAINING_ECR_REPOSITORY_URL:-}" ]; then
@@ -104,14 +117,16 @@ if [ -n "${TRAINING_ECR_REPOSITORY_URL:-}" ]; then
   docker pull "${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG}" ||
     fail "docker pull ${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG} failed. Confirm this tag has been pushed."
   echo "OK: pulled ${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG}."
+  smoke_training_image "${TRAINING_ECR_REPOSITORY_URL}:${IMAGE_TAG}"
 else
   BUILD_CONTEXT="$(cd "$(dirname "$0")/.." && pwd)/training/docker"
   if [ -d "${BUILD_CONTEXT}" ]; then
     docker build -t dioscuri-cloud-training:bootstrap-check "${BUILD_CONTEXT}" ||
       fail "docker build of training/docker failed."
     echo "OK: built dioscuri-cloud-training:bootstrap-check locally."
+    smoke_training_image "dioscuri-cloud-training:bootstrap-check"
   else
-    fail "training/docker/ not found in this checkout (Issue #61) and TRAINING_ECR_REPOSITORY_URL is unset. Either wait for #61 to land in this branch, or set TRAINING_ECR_REPOSITORY_URL to pull a pre-built image instead."
+    fail "training/docker/ not found in this checkout and TRAINING_ECR_REPOSITORY_URL is unset. The CUDA image lives in PR #68 (feature/training-image-modules-61, training/docker/) — merge or check that path out, or set TRAINING_ECR_REPOSITORY_URL to pull a pre-built image. Do not invent a parallel Dockerfile here."
   fi
 fi
 

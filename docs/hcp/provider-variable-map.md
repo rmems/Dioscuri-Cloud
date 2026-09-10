@@ -122,6 +122,7 @@ Terraform variables (scaffold inputs, active now):
 | `force_destroy` | terraform | no | `false` | Keep `false` for the persistent training bucket |
 | `noncurrent_version_expiration_days` | terraform | no | `90` | Bounds versioned-object storage cost |
 | `abort_incomplete_multipart_upload_days` | terraform | no | `7` | Required lifecycle rule (issue #47) |
+| `tags` | terraform | no | `{}` | Additional tags; governance tags in `main.tf` always win |
 
 ## Never commit
 

@@ -128,10 +128,19 @@ data "aws_iam_policy_document" "training_bucket_rw" {
       variable = "s3:prefix"
       # Both the bare "training" prefix and anything deeper under it must
       # match, or a ListBucket call passing the root prefix without a
-      # trailing "/*" segment is denied (same fix as training_execution
-      # module — see terraform/modules/training_execution/main.tf).
+      # trailing "/*" segment is denied (same prefix-pair approach planned
+      # for the training_execution module in GitHub #61).
       values = ["training", "training/*"]
     }
+  }
+
+  # Separate statement: GetBucketLocation does not send s3:prefix, so it
+  # cannot share ListTrainingBucket's prefix condition.
+  statement {
+    sid       = "GetTrainingBucketLocation"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation"]
+    resources = [aws_s3_bucket.training.arn]
   }
 
   statement {

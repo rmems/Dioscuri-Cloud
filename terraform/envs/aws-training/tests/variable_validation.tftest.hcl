@@ -87,6 +87,26 @@ run "rejects_ip_address_like_bucket_name" {
   expect_failures = [var.bucket_name]
 }
 
+run "rejects_xn_reserved_prefix" {
+  command = plan
+
+  variables {
+    bucket_name = "xn--dioscuri-training"
+  }
+
+  expect_failures = [var.bucket_name]
+}
+
+run "rejects_s3alias_reserved_suffix" {
+  command = plan
+
+  variables {
+    bucket_name = "dioscuri-training-s3alias"
+  }
+
+  expect_failures = [var.bucket_name]
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Lifecycle-duration variables — valid inputs must NOT raise an error
 # ─────────────────────────────────────────────────────────────────────────────

@@ -6,9 +6,11 @@ variable "bucket_name" {
     condition = (
       can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.bucket_name)) &&
       !can(regex("\\.\\.", var.bucket_name)) &&
-      !can(regex("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$", var.bucket_name))
+      !can(regex("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$", var.bucket_name)) &&
+      !can(regex("^xn--", var.bucket_name)) &&
+      !can(regex("(-s3alias|--ol-s3|--x-s3)$", var.bucket_name))
     )
-    error_message = "bucket_name must be 3-63 chars, lowercase letters/digits/hyphens/periods only, start and end with a letter or digit, no consecutive periods, and not look like an IP address (AWS S3 naming rules). Does not cover every reserved prefix/suffix (e.g. 'xn--', '--x-s3'); AWS may still reject some names at apply time."
+    error_message = "bucket_name must be 3-63 chars, lowercase letters/digits/hyphens/periods only, start and end with a letter or digit, no consecutive periods, and not look like an IP address. Reserved prefixes/suffixes xn--, -s3alias, --ol-s3, and --x-s3 are rejected (AWS S3 naming rules)."
   }
 }
 

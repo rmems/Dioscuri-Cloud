@@ -28,7 +28,7 @@ variable "ecr_untagged_image_expiry_days" {
 
   validation {
     condition     = var.ecr_untagged_image_expiry_days >= 1 && var.ecr_untagged_image_expiry_days == floor(var.ecr_untagged_image_expiry_days)
-    error_message = "ecr_untagged_image_expiry_days must be a positive whole number (ECR lifecycle policies require a non-zero positive integer countNumber)."
+    error_message = "ecr_untagged_image_expiry_days must be a positive whole number (ECR lifecycle policies require a non-zero positive integer for countNumber)."
   }
 }
 

@@ -152,12 +152,12 @@ does **not** apply here — training runs use `docs/training/artifact-layout.md`
 `training/checkpoints/`, `training/logs/`, `training/manifests/`). The
 generic scheme remains for non-training (inference-only) smokes.
 
-Prerequisites (all from this epic, not re-implemented here). **None of
-these paths exist on this branch or on `main` yet** — they live only on
-still-open sibling PRs. Do not invent a merge order among them, and do
-not treat any of them as applied:
+Prerequisites (all from this epic, not re-implemented here). These
+paths are now on `main` via merged PRs #67/#68/#71. **Code on `main`
+is not applied infrastructure** — do not invent live ARNs/URIs, and
+do not treat any of them as applied:
 
-- S3 training bucket (`terraform/envs/aws-training`, GitHub #47) — open
+- S3 training bucket (`terraform/envs/aws-training`, GitHub #47) — merged
   as [PR #67](https://github.com/rmems/Dioscuri-Cloud/pull/67). Dataset
   input and checkpoint/log output, laid out per
   `docs/training/artifact-layout.md`. **Must be in the same AWS region
@@ -165,16 +165,19 @@ not treat any of them as applied:
   to be in the job's region. **No `terraform apply` yet; no live bucket.**
 - SageMaker execution role + ECR repository
   (`terraform/modules/training_execution`, GitHub #61) plus the CUDA
-  image / `providers/aws/training-image-runbook.md` — open as
-  [PR #68](https://github.com/rmems/Dioscuri-Cloud/pull/68). **Not on
-  this branch; not applied; no live role, ECR repo, or pushed image.**
+  image / `providers/aws/training-image-runbook.md` — merged as
+  [PR #68](https://github.com/rmems/Dioscuri-Cloud/pull/68). The module
+  is on `main` but is **not instantiated** from
+  `terraform/envs/aws-training` (that env still only creates the
+  bucket). **Not applied; no live role, ECR repo, or pushed image.**
 - Fail-closed training preflight (`scripts/training-bootstrap.sh`,
-  GitHub #62) — open as
+  GitHub #62) — merged as
   [PR #71](https://github.com/rmems/Dioscuri-Cloud/pull/71). Optional
-  once the bucket/image exist; this launch path does not require #71
-  to merge first, and the script is not present here.
+  once the bucket/image exist; this launch path does not require the
+  bootstrap to pass first. Against today's unapplied prerequisites it
+  would fail closed (no live bucket/role/image).
 - A tiny dataset already staged at `s3://<bucket>/training/datasets/<slug>/`
-  — blocked until #67 is merged **and** applied.
+  — blocked until #67 is applied (code is on `main`; no live bucket).
 
 Until those live ARNs/URIs exist, do **not** run
 `aws sagemaker create-training-job`. Placeholder strings in the command
@@ -205,7 +208,10 @@ manifest:
 # chars, then append an 8-char hash of the full original RUN_ID — this
 # guarantees a valid start/end character, bounds the length to 63, and
 # keeps truncated-but-distinct run_ids from colliding on the same name.
-# Hash portably: GNU `md5sum` is not on macOS (`md5 -q` / `shasum` are).
+# Hash with MD5 only so the same RUN_ID yields the same job name on
+# GNU/Linux (`md5sum`) and macOS (`md5 -q`). Do not fall through to
+# sha256 — a different digest would make SAGEMAKER_JOB_NAME
+# unreproducible across hosts and break later describe/stop lookups.
 # A missing hasher must fail here — an empty substitution yields a
 # trailing-hyphen job name that SageMaker rejects late and confusingly.
 SAGEMAKER_JOB_NAME_BASE="$(printf '%s' "${RUN_ID}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
@@ -214,14 +220,15 @@ if command -v md5sum >/dev/null 2>&1; then
   SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | md5sum | awk '{print $1}' | cut -c1-8)"
 elif command -v md5 >/dev/null 2>&1; then
   SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | md5 -q | cut -c1-8)"
-elif command -v shasum >/dev/null 2>&1; then
-  SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | shasum -a 256 | awk '{print $1}' | cut -c1-8)"
 else
-  echo "error: need md5sum, md5, or shasum to derive SAGEMAKER_JOB_NAME" >&2
+  echo "error: need md5sum or md5 to derive SAGEMAKER_JOB_NAME (do not substitute sha256)" >&2
   exit 1
 fi
 [ -n "${SAGEMAKER_JOB_NAME_HASH}" ] || { echo "error: hash of RUN_ID was empty" >&2; exit 1; }
 SAGEMAKER_JOB_NAME="$(printf '%s' "${SAGEMAKER_JOB_NAME_BASE}" | cut -c1-53)-${SAGEMAKER_JOB_NAME_HASH}"
+# Echo the derived name at launch so the run record can store it and
+# later monitor/teardown do not depend on re-deriving it on another host.
+echo "SAGEMAKER_JOB_NAME=${SAGEMAKER_JOB_NAME}"
 ```
 
 Launch (CLI; HCP-managed apply/state is for the Terraform prerequisites
@@ -312,7 +319,7 @@ Azure resources. A follow-on issue must define, separately: an Azure Blob
 container matching `docs/training/artifact-layout.md`, an Azure Container
 Registry image, a managed identity/Azure ML compute job, and the
 Azure-equivalent dependencies replacing #47/#61's AWS artifacts (those
-AWS pieces themselves are still only on open PRs #67/#68, not applied).
+AWS pieces are now on `main` via #67/#68, still **not applied**).
 Until that follow-on issue exists, treat Azure as credit inventory only
 for this path (see `docs/credits/inventory.md`).
 

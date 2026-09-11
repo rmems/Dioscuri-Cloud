@@ -14,11 +14,14 @@ terraform/
   modules/                   Reusable, provider-agnostic interfaces
     artifact_bucket/         Object storage bucket/container abstraction
     service_account/         IAM principal + minimal bindings abstraction
+    training_node/           AWS bounded GPU training instance + IAM instance profile
+    training_execution/      AWS SageMaker training execution role + ECR repository
 
   envs/                      Environment stacks that compose modules
     ibm-dev/                 IBM Cloud dev (HCP: dioscuri-cloud-ibm-dev)
     oracle-dev/              Oracle Cloud dev (HCP: dioscuri-cloud-oracle-dev)
     gcp-artifacts/           GCP artifacts scaffold (implementation deferred)
+    aws-training/            AWS S3 training bucket + IAM (HCP: dioscuri-cloud-aws-training)
 
   aws/                       Provider-specific notes (legacy placeholder)
   azure/                     Provider-specific notes (legacy placeholder)
@@ -52,7 +55,7 @@ Terraform files should be kept `terraform fmt` clean.
 This repo runs basic Terraform checks in GitHub Actions for pull requests:
 - `terraform fmt -check -recursive`
 - `terraform init -backend=false` + `terraform validate` for module skeletons
-- `infra/terraform/environments/dev`, `infra/terraform/environments/vultr-dev`, `terraform/envs/ibm-dev`, and `terraform/envs/oracle-dev` validate without provider credentials
+- `infra/terraform/environments/dev`, `infra/terraform/environments/vultr-dev`, `terraform/envs/ibm-dev`, `terraform/envs/oracle-dev`, and `terraform/envs/aws-training` validate without provider credentials
 
 HCP Terraform runs remote plans/applies with workspace variables and credentials configured only in HCP.
 

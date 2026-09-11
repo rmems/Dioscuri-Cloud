@@ -42,7 +42,21 @@ GitLab secondary CI: [issue #1](https://gitlab.com/rmems/Dioscuri-Cloud/-/issues
 | HashiCorp ~$500 | ~2026-11-10 | HCP Terraform (not GPU) |
 | GCP $10/mo | Monthly | Planning only |
 
-IBM and Oracle trial credits expired 2026-06-28 — not the training execution path. See `docs/credits/inventory.md`.
+IBM and Oracle promo credits are **fully exhausted** (operator confirmed 2026-08-20; trial window ended 2026-06-28) — not the training execution path. See `docs/credits/inventory.md`.
+
+## Bootstrap checklist (Issue #62)
+
+Before launching any real training compute, run `scripts/training-bootstrap.sh`
+(`docs/training/bootstrap.md`) and confirm:
+
+- [ ] HCP lookup of org `Dioscuri-Cloud` / workspace `dioscuri-cloud-aws-training` succeeds (`terraform login` or `TF_TOKEN_app_terraform_io`)
+- [ ] `aws sts get-caller-identity` succeeds for the training account
+- [ ] `TRAINING_BUCKET_NAME`'s `training/` prefix is listable (bucket applied per #47)
+- [ ] Training image from #61/#68 (`training/docker/`) builds locally or pulls from ECR, then passes `--help` and `python3 -c "import torch; ..."` smokes (default `python3`, not `python3.11` / `train.py`)
+- [ ] Optional: GPU node `nvidia-smi` or SageMaker job dry-run succeeds (#53/#54)
+
+The script fails closed on the first unmet item and prints which step
+blocked — an operator should never need to guess credential layout.
 
 ## Guardrails
 

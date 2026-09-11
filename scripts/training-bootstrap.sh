@@ -40,10 +40,13 @@ HCP_WORKSPACE="${HCP_WORKSPACE:-dioscuri-cloud-aws-training}"
 HCP_API_BASE="${TF_API_BASE:-https://app.terraform.io/api/v2}"
 
 if [ -z "${TF_TOKEN_app_terraform_io:-}" ] && [ -f "${HOME}/.terraform.d/credentials.tfrc.json" ]; then
-  TF_TOKEN_app_terraform_io="$(jq -r '.credentials["app.terraform.io"].token // empty' "${HOME}/.terraform.d/credentials.tfrc.json")"
+  # A truncated/hand-edited credentials file makes jq exit non-zero. Guard the
+  # assignment so `set -e` cannot skip the fail-closed check below.
+  TF_TOKEN_app_terraform_io="$(jq -r '.credentials["app.terraform.io"].token // empty' "${HOME}/.terraform.d/credentials.tfrc.json")" ||
+    TF_TOKEN_app_terraform_io=""
 fi
 [ -n "${TF_TOKEN_app_terraform_io:-}" ] ||
-  fail "No HCP Terraform Cloud auth found. Run 'terraform login' or set TF_TOKEN_app_terraform_io. See docs/hcp/vcs-integration.md."
+  fail "No HCP Terraform Cloud auth found. Run 'terraform login' or set TF_TOKEN_app_terraform_io. If ~/.terraform.d/credentials.tfrc.json exists it must be valid JSON with a token for app.terraform.io. See docs/hcp/vcs-integration.md."
 
 # Same request pattern as scripts/hcp/bootstrap-workspaces.sh: a real,
 # authenticated, read-only lookup of the specific workspace — not just
@@ -56,12 +59,14 @@ trap 'rm -f "${HCP_CURL_CONFIG}"' EXIT
 chmod 600 "${HCP_CURL_CONFIG}"
 printf 'header = "Authorization: Bearer %s"\n' "${TF_TOKEN_app_terraform_io}" >"${HCP_CURL_CONFIG}"
 
-# set +e/-e around this: a network-level curl failure (DNS, no route, TLS)
-# makes the pipeline's exit status (pipefail) non-zero, and a bare failed
-# assignment would trip `set -e` before the check below ever runs.
+# set +e/-e around this: a network-level curl failure (DNS, no route, TLS,
+# or a timeout) makes the pipeline's exit status (pipefail) non-zero, and a
+# bare failed assignment would trip `set -e` before the check below ever runs.
+# --connect-timeout/--max-time keep a blackholed network from hanging forever.
 set +e
 WORKSPACE_ID="$(
-  curl -sS -K "${HCP_CURL_CONFIG}" -H "Content-Type: application/vnd.api+json" \
+  curl -sS --connect-timeout 5 --max-time 30 \
+    -K "${HCP_CURL_CONFIG}" -H "Content-Type: application/vnd.api+json" \
     "${HCP_API_BASE}/organizations/${HCP_ORG}/workspaces/${HCP_WORKSPACE}" |
     jq -r '.data.id // empty'
 )"
@@ -76,9 +81,16 @@ echo "OK: authenticated to HCP org '${HCP_ORG}', workspace '${HCP_WORKSPACE}' (i
 #    account. Set TRAINING_EXPECTED_AWS_ACCOUNT_ID to enforce a match.
 log "2/5 AWS caller identity"
 command -v aws >/dev/null 2>&1 || fail "aws CLI not found. Install the AWS CLI first."
-CALLER_IDENTITY="$(aws sts get-caller-identity --output json 2>&1)" ||
-  fail "aws sts get-caller-identity failed. Check AWS_PROFILE / AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN (if using temporary credentials) / AWS_REGION for the training account. Output: ${CALLER_IDENTITY}"
-CALLER_ACCOUNT="$(printf '%s' "${CALLER_IDENTITY}" | jq -r '.Account')"
+# Capture stdout only. AWS CLI v2 can print non-fatal notices to stderr on
+# success (e.g. update checks); merging them with 2>&1 would break jq and
+# trip `set -e` before fail() can print BLOCKED. Real CLI errors stay on
+# stderr for the operator.
+CALLER_IDENTITY="$(aws sts get-caller-identity --output json)" ||
+  fail "aws sts get-caller-identity failed. Check AWS_PROFILE / AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN (if using temporary credentials) / AWS_REGION for the training account."
+CALLER_ACCOUNT="$(printf '%s' "${CALLER_IDENTITY}" | jq -r '.Account // empty')" ||
+  fail "Could not parse Account from aws sts get-caller-identity output."
+[ -n "${CALLER_ACCOUNT}" ] ||
+  fail "aws sts get-caller-identity did not return an Account."
 echo "OK: AWS credentials resolve to account ${CALLER_ACCOUNT}."
 if [ -n "${TRAINING_EXPECTED_AWS_ACCOUNT_ID:-}" ] && [ "${CALLER_ACCOUNT}" != "${TRAINING_EXPECTED_AWS_ACCOUNT_ID}" ]; then
   fail "Active AWS credentials resolve to account ${CALLER_ACCOUNT}, but TRAINING_EXPECTED_AWS_ACCOUNT_ID=${TRAINING_EXPECTED_AWS_ACCOUNT_ID}. Switch AWS_PROFILE or unset TRAINING_EXPECTED_AWS_ACCOUNT_ID to skip this check."
@@ -136,14 +148,17 @@ fi
 #    exist yet until #53 or #54 provisions one — this step is skip-safe.
 log "5/5 Optional dry-run"
 if [ -n "${TRAINING_GPU_INSTANCE_ID:-}" ]; then
+  # Capture CommandId from stdout only. 2>&1 would merge CLI stderr notices
+  # (e.g. update checks) into the ID and make the waiter fail after a
+  # successful nvidia-smi dispatch. Dispatch stderr stays visible on failure.
   SSM_COMMAND_ID="$(
     aws ssm send-command \
       --instance-ids "${TRAINING_GPU_INSTANCE_ID}" \
       --document-name "AWS-RunShellScript" \
       --parameters commands="nvidia-smi" \
-      --query "Command.CommandId" --output text 2>&1
+      --query "Command.CommandId" --output text
   )" ||
-    fail "SSM send-command (nvidia-smi dispatch) to ${TRAINING_GPU_INSTANCE_ID} failed: ${SSM_COMMAND_ID}. This requires ssm:SendCommand on the IAM principal running this script (a write permission — this step is not read-only) AND the target instance's own SSM Agent/instance-profile registration (a separate, node-side permission)."
+    fail "SSM send-command (nvidia-smi dispatch) to ${TRAINING_GPU_INSTANCE_ID} failed. This requires ssm:SendCommand on the IAM principal running this script (a write permission — this step is not read-only) AND the target instance's own SSM Agent/instance-profile registration (a separate, node-side permission)."
 
   # The waiter polls ssm:GetCommandInvocation — a separate permission from
   # ssm:SendCommand above. Capture its stderr (and exit status explicitly,

@@ -4,20 +4,20 @@ Tracks training metrics and run history in the artifact bucket itself
 (GitHub #60) — not a shared RAG vector database, and not a paid managed
 experiment-tracking platform unless separately cap-approved in an issue.
 
-The contract this relies on is defined in `docs/training/artifact-layout.md`
-("Metrics and run index" section): every run writes
-`training/logs/<run_id>/metrics.json` and a run manifest at
-`training/manifests/<run_id>.json`; buckets may additionally maintain
+The comparison workflow below uses the contract in
+`docs/training/artifact-layout.md` ("Metrics and run index" section).
+Issue #60 allows a run to produce `metrics.json` **or** TensorBoard
+event files. TensorBoard-only runs remain valid stored artifacts, but
+this workflow compares only runs that also write
+`training/logs/<run_id>/metrics.json` (plus a run manifest at
+`training/manifests/<run_id>.json`). Buckets may additionally maintain
 `training/manifests/index.json` as a lightweight cross-run index.
 
-Issue #60's scope allows a run to produce "metrics.json **or** TensorBoard
-event files." This doc's comparison workflow deliberately requires the
-small structured `metrics.json` specifically — parsing TensorBoard's binary
-event format for a two-line loss/wall-time diff would defeat "comparable
-from stored artifacts alone." A run that only emits TensorBoard events
-under `training/logs/<run_id>/events/` remains valid per the artifact
-layout, but isn't comparable via this doc's workflow until it also writes
-a `metrics.json` summary (even a minimal one, generated from the same
+This workflow requires the small structured `metrics.json` specifically —
+parsing TensorBoard's binary event format for a two-line loss/wall-time
+diff would defeat "comparable from stored artifacts alone." A
+TensorBoard-only run isn't comparable here until it also writes a
+`metrics.json` summary (even a minimal one, generated from the same
 event data).
 
 ## Comparing two training smokes
@@ -45,7 +45,7 @@ tracker required.
    | Steps completed | `steps_completed` | `final_step` |
    | Trainer/base model | `trainer`, `base_model` | — |
 
-   A one-line `jq` comparison, handling `final_loss: null` (permitted by the
+   A `jq` comparison, handling `final_loss: null` (permitted by the
    schema, e.g. for trainers that don't report a scalar loss) rather than
    erroring on the subtraction:
    ```bash
@@ -60,9 +60,12 @@ tracker required.
    above.
 
 If a bucket maintains `training/manifests/index.json`, skip steps 1–2 and
-query it directly — it already carries `trainer`, `base_model`,
-`final_loss`, `wall_time_seconds`, `steps_completed`, and both cost fields
-per run.
+query it directly for dimensions the index already carries: `trainer`,
+`base_model`, `final_loss`, `wall_time_seconds`, `steps_completed`, and
+both cost fields. Index entries do **not** include the per-run `steps`
+array, so the `.steps[-1].loss` fallback above is unavailable on this
+path. A run whose `final_loss` is null still needs its per-run
+`metrics.json` (step 2) to compare step loss.
 
 ## What "comparable" means here
 

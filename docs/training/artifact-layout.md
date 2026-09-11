@@ -35,7 +35,11 @@ See `docs/schemas/experiment-manifest.md` (training fields) and `examples/traini
 ## Metrics and run index (GitHub #60)
 
 `training/logs/<run_id>/metrics.json` — written by the training job itself
-(or the tracking step immediately after). Required top-level fields:
+(or the tracking step immediately after) when the run is meant to be
+compared from stored artifacts. Issue #60 also permits TensorBoard-only
+runs under `training/logs/<run_id>/events/`; those remain valid stored
+artifacts, but they are not comparable until they also write this file.
+When `metrics.json` is present, required top-level fields:
 
 | Field | Type | Description |
 |---|---|---|
@@ -84,14 +88,14 @@ append-only only in the sense that a genuinely **new** `run_id` gets a new
 entry; writers must read-modify-write (not blind-append) to enforce this.
 
 **Concurrency caveat:** a plain read-modify-write to a shared `index.json`
-races if two runs finish close together — the second writer can overwrite
-the first's new entry with a copy that doesn't include it. For the current
-one-smoke-at-a-time execution model (`docs/runbooks/gpu-smoke-test-readiness.md`)
-this is a low-probability, low-stakes gap: `training/manifests/<run_id>.json`
-remains the source of truth per run, and `index.json` can always be
-rebuilt from those. If concurrent writers become common, use S3 conditional
-writes (`If-Match` on the object's ETag, retry-on-conflict) rather than a
-bare read-modify-write.
+races if two writers finish close together — the second can overwrite
+the first's new entry with a copy that doesn't include it. This layout
+scopes `index.json` to a **single writer** (at most one process updating
+the index at a time). Concurrent writers are out of scope unless they
+use S3 conditional writes (`If-Match` on the object's ETag,
+retry-on-conflict) or an equivalent lock. Per-run
+`training/manifests/<run_id>.json` remains the source of truth, and
+`index.json` can always be rebuilt from those.
 
 See `docs/training/experiment-tracking.md` for how to use these to compare
 two runs.

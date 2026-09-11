@@ -10,7 +10,7 @@ variable "bucket_name" {
       !can(regex("^xn--", var.bucket_name)) &&
       !can(regex("(-s3alias|--ol-s3|--x-s3)$", var.bucket_name))
     )
-    error_message = "bucket_name must be 3-63 chars, lowercase letters/digits/hyphens/periods only, start and end with a letter or digit, no consecutive periods, and not look like an IP address. Reserved prefixes/suffixes xn--, -s3alias, --ol-s3, and --x-s3 are rejected (AWS S3 naming rules)."
+    error_message = "bucket_name must be 3-63 chars, lowercase letters/digits/hyphens/periods only, start and end with a letter or digit, no consecutive periods, and not look like an IP address. This check rejects prefix xn-- and suffixes -s3alias, --ol-s3, and --x-s3. It does not cover every AWS reserved prefix/suffix (e.g. amzn-s3-demo-); AWS may still reject some names at apply time."
   }
 }
 

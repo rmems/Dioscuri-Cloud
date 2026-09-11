@@ -107,6 +107,26 @@ run "rejects_s3alias_reserved_suffix" {
   expect_failures = [var.bucket_name]
 }
 
+run "rejects_ol_s3_reserved_suffix" {
+  command = plan
+
+  variables {
+    bucket_name = "dioscuri-training--ol-s3"
+  }
+
+  expect_failures = [var.bucket_name]
+}
+
+run "rejects_x_s3_reserved_suffix" {
+  command = plan
+
+  variables {
+    bucket_name = "dioscuri-training--x-s3"
+  }
+
+  expect_failures = [var.bucket_name]
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Lifecycle-duration variables — valid inputs must NOT raise an error
 # ─────────────────────────────────────────────────────────────────────────────

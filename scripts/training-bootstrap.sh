@@ -161,8 +161,9 @@ if [ -n "${TRAINING_GPU_INSTANCE_ID:-}" ]; then
     fail "SSM send-command (nvidia-smi dispatch) to ${TRAINING_GPU_INSTANCE_ID} failed. This requires ssm:SendCommand on the IAM principal running this script (a write permission — this step is not read-only) AND the target instance's own SSM Agent/instance-profile registration (a separate, node-side permission)."
   # --output text prints empty or "None" when Command.CommandId is missing;
   # that is still a successful CLI exit, so || fail above does not fire.
-  [ -n "${SSM_COMMAND_ID}" ] && [ "${SSM_COMMAND_ID}" != "None" ] ||
+  if [ -z "${SSM_COMMAND_ID}" ] || [ "${SSM_COMMAND_ID}" = "None" ]; then
     fail "aws ssm send-command to ${TRAINING_GPU_INSTANCE_ID} returned no CommandId."
+  fi
 
   # The waiter polls ssm:GetCommandInvocation — a separate permission from
   # ssm:SendCommand above. Capture its stderr (and exit status explicitly,

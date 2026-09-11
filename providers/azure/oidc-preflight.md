@@ -80,7 +80,7 @@ this one environment.
 | `azure/login` step fails with a token-exchange error | Federated credential's issuer/entity/environment name doesn't match this repo+environment exactly, or the environment secrets are missing/misnamed |
 | `az account show` fails with an authorization error | The app registration has no role assignment on the target subscription, or the wrong `AZURE_SUBSCRIPTION_ID` was configured |
 | Workflow doesn't appear to have `id-token: write` | Confirm the job-level `permissions:` block in the workflow wasn't edited away — this preflight requires it to request an OIDC token at all |
-| Report shows `Status: FAIL` | `az account show` failed after a successful login — check subscription access/role assignment; the report intentionally omits identifiers, so check the (private) job log for the underlying Azure CLI error |
+| Report shows `Status: FAIL` | `az account show` failed after a successful login — check subscription access/role assignment. This repository is public, so Actions job logs are public: do not treat them as private, and do not expect Azure CLI error text there (the workflow discards stdout/stderr so identifiers stay out of the log). Diagnose privately via Entra sign-in logs or the subscription's role assignments |
 
 ## Non-goals
 

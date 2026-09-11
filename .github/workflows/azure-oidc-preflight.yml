@@ -16,14 +16,12 @@ jobs:
   preflight:
     name: Azure OIDC preflight (read-only)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: azure-oidc-preflight
     permissions:
       id-token: write
       contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
       - name: Azure login (OIDC)
         id: login
         uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
@@ -41,9 +39,10 @@ jobs:
         run: |
           set +e
           if [ "$LOGIN_OUTCOME" = "success" ]; then
-            # Output is discarded, not saved to a file: this file would contain
-            # subscription/tenant identifiers, and only the exit code is used.
-            az account show --output json > /dev/null
+            # stdout and stderr are discarded: Azure CLI can embed
+            # subscription/tenant identifiers in either stream. Only the
+            # exit code is used; nothing is written to disk or the job log.
+            az account show --output json > /dev/null 2>/dev/null
             status=$?
           else
             status=1

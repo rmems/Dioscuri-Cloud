@@ -47,7 +47,7 @@ Placeholder ARNs/URIs in the runbook are not real values.
 - [ ] Quota / availability checked — requires a real AWS account session against the training account
 - [ ] Terraform plan reviewed — open PRs #67/#68 may pass `terraform validate`/`terraform test` in their own CI; that is not a reviewed `terraform plan` against real HCP state, and those modules/envs are not on this branch. Leave unchecked until a real plan exists. **No apply.**
 - [ ] Artifact path selected — the *scheme* is fixed (`s3://<bucket>/training/checkpoints/<run_id>/` per `docs/training/artifact-layout.md`), but both `<bucket>` and `<run_id>` are still placeholders; leave unchecked until a concrete bucket and a concrete, unique `run_id` are recorded, so a later launch can't accidentally reuse a prefix and mix `step_<n>` data or overwrite `latest.json`
-- [x] Experiment manifest template prepared — run-specific draft below (not just a link to the generic schema), with known fields filled in and the rest marked `TBD`
+- [x] Experiment manifest template prepared — run-specific draft below (not just a link to the generic schema), with known fields filled in. String fields still pending launch stay `"TBD"`; integer-typed fields use a numeric placeholder or `null` (never the string `"TBD"`)
 - [x] Teardown checklist linked (`docs/runbooks/teardown-checklist.md`) — see Teardown section below for why a SageMaker job's teardown looks different from a deletable resource
 - [ ] Max runtime / cost cap defined — proposed below, needs operator sign-off before launch
 
@@ -65,8 +65,12 @@ Placeholder ARNs/URIs in the runbook are not real values.
 ## Draft run manifest
 
 Per `docs/schemas/experiment-manifest.md` training fields — known values
-filled in now, the rest marked `TBD` until launch. This is the actual
-manifest shape this run will emit to
+filled in now. Pending string fields stay `"TBD"` until launch;
+`steps_configured` is a real integer (tiny-job budget matching
+`examples/training-run-manifest.synthetic.json`), not a string
+placeholder. `steps_completed` stays `null` until the job runs; the
+emitted post-run manifest must replace that with an integer. This is
+the actual manifest shape this run will emit to
 `s3://<bucket>/training/manifests/<run_id>.json`, not just a link to the
 schema doc:
 
@@ -80,7 +84,7 @@ schema doc:
   "base_model": "TBD",
   "model_slug": "TBD",
   "trainer": "TBD",
-  "steps_configured": "TBD",
+  "steps_configured": 10,
   "steps_completed": null,
   "telemetry_source": "synthetic",
   "provider": "aws",

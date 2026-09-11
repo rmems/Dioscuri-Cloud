@@ -205,9 +205,23 @@ manifest:
 # chars, then append an 8-char hash of the full original RUN_ID — this
 # guarantees a valid start/end character, bounds the length to 63, and
 # keeps truncated-but-distinct run_ids from colliding on the same name.
+# Hash portably: GNU `md5sum` is not on macOS (`md5 -q` / `shasum` are).
+# A missing hasher must fail here — an empty substitution yields a
+# trailing-hyphen job name that SageMaker rejects late and confusingly.
 SAGEMAKER_JOB_NAME_BASE="$(printf '%s' "${RUN_ID}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
 [ -n "${SAGEMAKER_JOB_NAME_BASE}" ] || SAGEMAKER_JOB_NAME_BASE="run"
-SAGEMAKER_JOB_NAME="$(printf '%s' "${SAGEMAKER_JOB_NAME_BASE}" | cut -c1-53)-$(printf '%s' "${RUN_ID}" | md5sum | cut -c1-8)"
+if command -v md5sum >/dev/null 2>&1; then
+  SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | md5sum | awk '{print $1}' | cut -c1-8)"
+elif command -v md5 >/dev/null 2>&1; then
+  SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | md5 -q | cut -c1-8)"
+elif command -v shasum >/dev/null 2>&1; then
+  SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | shasum -a 256 | awk '{print $1}' | cut -c1-8)"
+else
+  echo "error: need md5sum, md5, or shasum to derive SAGEMAKER_JOB_NAME" >&2
+  exit 1
+fi
+[ -n "${SAGEMAKER_JOB_NAME_HASH}" ] || { echo "error: hash of RUN_ID was empty" >&2; exit 1; }
+SAGEMAKER_JOB_NAME="$(printf '%s' "${SAGEMAKER_JOB_NAME_BASE}" | cut -c1-53)-${SAGEMAKER_JOB_NAME_HASH}"
 ```
 
 Launch (CLI; HCP-managed apply/state is for the Terraform prerequisites

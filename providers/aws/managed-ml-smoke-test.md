@@ -138,6 +138,191 @@ Acceptable evidence:
 - AWS CLI output confirming deletion
 - Terraform destroy / HCP Terraform run link if Terraform was used
 
+## Training Job Path (GitHub #54)
+
+The sections above cover managed ML generically (inference or training).
+This section is the **explicit training-job path** — AWS primary, Azure ML
+only as a documented fallback if AWS is blocked (do not improvise
+SageMaker-shaped resources on Azure; that needs its own follow-on issue).
+
+**S3 prefix override for this path:** the generic "Artifact destination
+chosen" prerequisite above (`dioscuri-cloud/smoke-tests/aws/<date>/<run_id>/`)
+does **not** apply here — training runs use `docs/training/artifact-layout.md`'s
+`training/` prefix scheme exclusively (`training/datasets/`,
+`training/checkpoints/`, `training/logs/`, `training/manifests/`). The
+generic scheme remains for non-training (inference-only) smokes.
+
+Prerequisites (all from this epic, not re-implemented here). These
+paths are now on `main` via merged PRs #67/#68/#71. **Code on `main`
+is not applied infrastructure** — do not invent live ARNs/URIs, and
+do not treat any of them as applied:
+
+- S3 training bucket (`terraform/envs/aws-training`, GitHub #47) — merged
+  as [PR #67](https://github.com/rmems/Dioscuri-Cloud/pull/67). Dataset
+  input and checkpoint/log output, laid out per
+  `docs/training/artifact-layout.md`. **Must be in the same AWS region
+  as the training job** — SageMaker requires input/output S3 locations
+  to be in the job's region. **No `terraform apply` yet; no live bucket.**
+- SageMaker execution role + ECR repository
+  (`terraform/modules/training_execution`, GitHub #61) plus the CUDA
+  image / `providers/aws/training-image-runbook.md` — merged as
+  [PR #68](https://github.com/rmems/Dioscuri-Cloud/pull/68). The module
+  is on `main` but is **not instantiated** from
+  `terraform/envs/aws-training` (that env still only creates the
+  bucket). **Not applied; no live role, ECR repo, or pushed image.**
+- Fail-closed training preflight (`scripts/training-bootstrap.sh`,
+  GitHub #62) — merged as
+  [PR #71](https://github.com/rmems/Dioscuri-Cloud/pull/71). Optional
+  once the bucket/image exist; this launch path does not require the
+  bootstrap to pass first. Against today's unapplied prerequisites it
+  would fail closed (no live bucket/role/image).
+- A tiny dataset already staged at `s3://<bucket>/training/datasets/<slug>/`
+  — blocked until #67 is applied (code is on `main`; no live bucket).
+
+Until those live ARNs/URIs exist, do **not** run
+`aws sagemaker create-training-job`. Placeholder strings in the command
+below (`<execution_role_arn>`, `<ecr_repository_url>`, `<bucket>`) are
+not real values and must not be substituted from another account or
+from a guessed ARN.
+
+**Job name:** `TrainingJobName` must match `[a-zA-Z0-9](-*[a-zA-Z0-9]){0,62}`
+(start and end with an alphanumeric, only hyphens in between, max 63 chars)
+— this repo's manifest-style `run_id`s (e.g.
+`20260523T141000Z_gcp_csv_re4_r0`) are **not** valid SageMaker job names,
+and neither is every `run_id` this repo could produce in general (`.`,
+consecutive/trailing invalid characters, etc. all need handling, not just
+underscores). Truncating alone also risks two different long `run_id`s
+colliding on the same truncated prefix. Derive a sanitized, collision-safe
+job name and keep the original `run_id` (unsanitized) for S3 paths and the
+manifest:
+
+```bash
+# Fail fast if RUN_ID was never set: an empty RUN_ID would otherwise
+# silently collapse every forgotten-RUN_ID launch onto the same job name
+# (the empty string's hash is a fixed constant) and the same shared
+# training/checkpoints//, training/logs// prefixes across unrelated runs.
+: "${RUN_ID:?RUN_ID must be set to a unique identifier for this run before launching (e.g. a timestamp-based slug)}"
+
+# Lowercase, collapse every run of non-alphanumeric characters to one
+# hyphen, strip leading/trailing hyphens, truncate the readable part to 53
+# chars, then append an 8-char hash of the full original RUN_ID — this
+# guarantees a valid start/end character, bounds the length to 63, and
+# keeps truncated-but-distinct run_ids from colliding on the same name.
+# Hash with MD5 only so the same RUN_ID yields the same job name on
+# GNU/Linux (`md5sum`) and macOS (`md5 -q`). Do not fall through to
+# sha256 — a different digest would make SAGEMAKER_JOB_NAME
+# unreproducible across hosts and break later describe/stop lookups.
+# A missing hasher must fail here — an empty substitution yields a
+# trailing-hyphen job name that SageMaker rejects late and confusingly.
+SAGEMAKER_JOB_NAME_BASE="$(printf '%s' "${RUN_ID}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+[ -n "${SAGEMAKER_JOB_NAME_BASE}" ] || SAGEMAKER_JOB_NAME_BASE="run"
+if command -v md5sum >/dev/null 2>&1; then
+  SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | md5sum | awk '{print $1}' | cut -c1-8)"
+elif command -v md5 >/dev/null 2>&1; then
+  SAGEMAKER_JOB_NAME_HASH="$(printf '%s' "${RUN_ID}" | md5 -q | cut -c1-8)"
+else
+  echo "error: need md5sum or md5 to derive SAGEMAKER_JOB_NAME (do not substitute sha256)" >&2
+  exit 1
+fi
+[ -n "${SAGEMAKER_JOB_NAME_HASH}" ] || { echo "error: hash of RUN_ID was empty" >&2; exit 1; }
+SAGEMAKER_JOB_NAME="$(printf '%s' "${SAGEMAKER_JOB_NAME_BASE}" | cut -c1-53)-${SAGEMAKER_JOB_NAME_HASH}"
+# Echo the derived name at launch so the run record can store it and
+# later monitor/teardown do not depend on re-deriving it on another host.
+echo "SAGEMAKER_JOB_NAME=${SAGEMAKER_JOB_NAME}"
+```
+
+Launch (CLI; HCP-managed apply/state is for the Terraform prerequisites
+above, not for the job itself — SageMaker jobs are launched directly, not
+through `terraform apply`. This PR does not apply those modules).
+`CheckpointConfig` is **required** if the container writes checkpoints
+under `/opt/ml/checkpoints`: SageMaker mounts and syncs that local path
+**only** when `CheckpointConfig` is set. Do not document or assume
+`/opt/ml/checkpoints` as a SageMaker-provided directory unless
+`--checkpoint-config` is present on the job. `OutputDataConfig` does
+**not** mount that path and only uploads a final `model.tar.gz` at job
+end. Neither flag automatically produces
+`docs/training/artifact-layout.md`'s `step_<n>/`/`latest.json` shape or
+`training/logs/<run_id>/metrics.json` — the training container itself
+must write those (into `CheckpointConfig.LocalPath`, here
+`/opt/ml/checkpoints`, for checkpoints; via an explicit S3 `PutObject`
+for `metrics.json`, since SageMaker CloudWatch Logs do not write to a
+repo-defined S3 path). The #68 image ships no `train.py` and does not
+create those objects by itself. The container cannot reconstruct the
+original `RUN_ID` from `SAGEMAKER_JOB_NAME` (lowercased and hyphenated
+above) — pass the real `run_id` and the exact metrics destination in
+explicitly via `--environment`:
+
+```bash
+aws sagemaker create-training-job \
+  --region "<region>" \
+  --training-job-name "${SAGEMAKER_JOB_NAME}" \
+  --algorithm-specification TrainingImage="<ecr_repository_url>:<tag>",TrainingInputMode=File \
+  --role-arn "<execution_role_arn>" \
+  --input-data-config '[{
+    "ChannelName": "training",
+    "DataSource": {
+      "S3DataSource": {
+        "S3DataType": "S3Prefix",
+        "S3Uri": "s3://<bucket>/training/datasets/<slug>/",
+        "S3DataDistributionType": "FullyReplicated"
+      }
+    }
+  }]' \
+  --output-data-config S3OutputPath="s3://<bucket>/training/checkpoints/${RUN_ID}/final/" \
+  --checkpoint-config S3Uri="s3://<bucket>/training/checkpoints/${RUN_ID}/",LocalPath="/opt/ml/checkpoints" \
+  --resource-config InstanceType=ml.g4dn.xlarge,InstanceCount=1,VolumeSizeInGB=50 \
+  --stopping-condition MaxRuntimeInSeconds=1800 \
+  --environment RUN_ID="${RUN_ID}",METRICS_S3_URI="s3://<bucket>/training/logs/${RUN_ID}/metrics.json" \
+  --tags Key=owner,Value=rmems Key=github,Value=54 Key=pr,Value=<pr-number> Key=teardown_by,Value=<same-day>
+```
+
+Monitor and confirm teardown:
+
+```bash
+# SageMaker training jobs are not "deleted" — they run to completion,
+# failure, or are stopped. Teardown evidence for a training job is its
+# terminal DescribeTrainingJob status (Completed/Failed/Stopped), not a
+# delete call, and not the stop *request* itself: StopTrainingJob sends
+# SIGTERM and allows up to a 120-second graceful-shutdown window, so the
+# job is not yet in a terminal state when the stop call returns.
+aws sagemaker wait training-job-completed-or-stopped --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
+aws sagemaker describe-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}" --query 'TrainingJobStatus'
+
+# If it must be stopped early instead of waiting for natural completion:
+aws sagemaker stop-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
+aws sagemaker wait training-job-completed-or-stopped --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}"
+aws sagemaker describe-training-job --region "<region>" --training-job-name "${SAGEMAKER_JOB_NAME}" --query 'TrainingJobStatus'
+# Confirms Stopped (or Failed) — this describe-training-job result, not
+# the stop-training-job call, is the teardown evidence.
+```
+
+Before closing the run, verify both S3 prefixes actually received objects
+(checkpoint sync and the container's own `metrics.json`/`latest.json`
+writes are not guaranteed by the CLI flags alone — confirm the training
+code did its part):
+
+```bash
+aws s3 ls "s3://<bucket>/training/checkpoints/${RUN_ID}/" --recursive
+aws s3 ls "s3://<bucket>/training/logs/${RUN_ID}/" --recursive
+```
+
+Write the run manifest (`docs/schemas/experiment-manifest.md` training
+fields) to `s3://<bucket>/training/manifests/<run_id>.json` (using the
+original, unsanitized `run_id`) with `job_type = training`, `trainer`,
+`steps_configured`/`steps_completed`, `dataset_uri`, and `checkpoint_uri`
+populated from the actual job.
+
+### Azure ML fallback (only if AWS is blocked)
+
+Do not reuse the SageMaker role/ECR/S3 resources above as if they were
+Azure resources. A follow-on issue must define, separately: an Azure Blob
+container matching `docs/training/artifact-layout.md`, an Azure Container
+Registry image, a managed identity/Azure ML compute job, and the
+Azure-equivalent dependencies replacing #47/#61's AWS artifacts (those
+AWS pieces are now on `main` via #67/#68, still **not applied**).
+Until that follow-on issue exists, treat Azure as credit inventory only
+for this path (see `docs/credits/inventory.md`).
+
 ## Post-Run Record
 
 Before closing the smoke test:

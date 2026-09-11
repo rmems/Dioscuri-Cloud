@@ -15,10 +15,9 @@ this workflow compares only runs that also write
 
 This workflow requires the small structured `metrics.json` specifically —
 parsing TensorBoard's binary event format for a two-line loss/wall-time
-diff would defeat "comparable from stored artifacts alone." A
-TensorBoard-only run isn't comparable here until it also writes a
-`metrics.json` summary (even a minimal one, generated from the same
-event data).
+diff would defeat "comparable from stored artifacts alone." Even a
+minimal `metrics.json` summary, generated from the same event data, is
+enough.
 
 ## Comparing two training smokes
 

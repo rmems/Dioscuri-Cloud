@@ -95,7 +95,7 @@ the index at a time). Concurrent writers are out of scope unless they
 use S3 conditional writes (`If-Match` on the object's ETag,
 retry-on-conflict) or an equivalent lock. Per-run
 `training/manifests/<run_id>.json` remains the source of truth, and
-`index.json` can always be rebuilt from those.
+`index.json` can be rebuilt from those plus any `metrics.json` files.
 
 See `docs/training/experiment-tracking.md` for how to use these to compare
 two runs.

@@ -1,6 +1,6 @@
 # Cloud AI training setup (epic index)
 
-**Updated:** 2026-08-19. Dioscuri-Cloud is now scoped to **standing up cloud AI model training** (storage, GPU/managed jobs, cost/teardown, HCP control plane). Bounded fine-tune/SFT smokes are in scope; from-scratch large pretraining is not.
+**Updated:** 2026-08-19. Dioscuri-Cloud is now scoped to **standing up cloud AI model training** (storage, GPU/managed jobs, cost/teardown, HCP control plane). Bounded fine-tune/SFT smokes are in scope; from-scratch large pretraining is not. Training implementation lives in [`rmems/agoge-forger`](https://github.com/rmems/agoge-forger); this repo orchestrates it in the cloud (see the README repo boundary).
 
 ## Issue map (GitHub ↔ Linear)
 

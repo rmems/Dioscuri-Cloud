@@ -2,7 +2,30 @@
 
 Cloud operations layer for **AI model training setup** on student/free cloud credits: object storage, CUDA images, GPU nodes, managed training jobs (SageMaker / Azure ML), cost tracking, and HCP Terraform control plane.
 
-Training implementation code may live in other repos (e.g. `rmems/agoge-forger`); this repo owns **reproducible cloud infra, runbooks, and experiment records**.
+Training implementation lives in [`rmems/agoge-forger`](https://github.com/rmems/agoge-forger); this repo orchestrates it in the cloud.
+
+## Repo boundary
+
+| Side | Owns |
+|---|---|
+| Agoge ([`rmems/agoge-forger`](https://github.com/rmems/agoge-forger)) | Train/eval, checkpoints, manifests, HF release tooling |
+| Dioscuri (this repo) | Terraform, cloud jobs, costs, provider runbooks, training image, S3, SageMaker/bootstrap, cost ledger |
+| Upstream data | [`synthetic-factory`](https://github.com/rmems/synthetic-factory) / [`operation-prometheus`](https://github.com/rmems/operation-prometheus) |
+
+No cloud-infra trees in Agoge.
+
+Agoge trainer today: Typer CLI `agoge` → `agoge_forger.cli:app`. Primary path is TRL SFTTrainer + PEFT + bitsandbytes QLoRA via `uv run agoge train-qlora --config <yaml>` (also `train-lora`). Makefile: `setup`, `check-torch`, `train-smoke` (MiniCPM5 canary), `eval-smoke` (toy), `test`, `lint`. Stock configs: `configs/minicpm5_canary.yaml`, `configs/granite_4_1_flagship.yaml`, `configs/minicpm5_code_repair.yaml.example`. Local RTX 5080 notes: Agoge `docs/rtx5080_local_training.md`. Artifacts: `adapters/<run_name>`, `checkpoint-*`, `merged/<run_name>`.
+
+Local smoke exists; the cloud path is infra-first here. Do not claim ready: stock YAMLs may not pin revision; `make eval-smoke` is toy; no Trackio or fail-closed cost caps in Agoge (Dioscuri owns cost discipline if claimed); factory export ingest is not in Agoge; Hub push is not a current ladder rung. Open Agoge issues exist for qualify/harness/Granite — do not invent readiness numbers.
+
+Operators launching from the cloud side typically run in Agoge (not this repo):
+
+```text
+uv sync --all-groups
+uv run agoge check-torch
+uv run agoge train-qlora --config configs/minicpm5_canary.yaml
+uv run agoge export-final-model --run-dir adapters/<run_name> --out-dir merged/<run_name>
+```
 
 ## Goals
 

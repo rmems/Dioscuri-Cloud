@@ -27,7 +27,9 @@ out of this repo, and keep cloud-infra trees out of Agoge.
 
 - Terraform **1.10.5** (`hashicorp/setup-terraform` in `terraform-validate.yml`; `TF_VERSION` in `.gitlab-ci.yml`).
 - No cloud credentials are needed to validate (`init -backend=false`).
-- No GPU needed locally. The CUDA image is only built, never run, in this repo.
+- No GPU needed locally. `scripts/training-bootstrap.sh` builds the CUDA training image and runs
+  its `--help` and python3/torch smokes with `docker run`; those smokes don't need a GPU
+  (`training/docker/README.md`).
 
 ## Commands (from `.github/workflows/terraform-validate.yml`)
 

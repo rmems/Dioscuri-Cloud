@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Amp orb setup for Dioscuri-Cloud.
+#
+# Amp runs this from the repository root when it builds a project orb snapshot
+# (Debian 12, CPU only: orbs have no GPU). It must finish within 20 minutes and
+# be safe to run more than once. See https://ampcode.com/docs/orbs/customizing
+#
+# Installs only what this repo's CI and manifests need:
+#   - Terraform 1.10.5 (official zip, sha256-verified, /usr/local/bin)
+#   - terraform init -backend=false -lockfile=readonly for the 5 roots with committed lock files
+#
+# It ends with a dependency fetch/prebuild, not a test run.
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+  SUDO="sudo"
+fi
+
+# --- Terraform 1.10.5 (terraform-validate.yml: hashicorp/setup-terraform terraform_version 1.10.5) ---
+TF_VERSION="1.10.5"
+if ! terraform version 2>/dev/null | head -n1 | grep -qx "Terraform v${TF_VERSION}"; then
+  arch="$(dpkg --print-architecture)"
+  tmp="$(mktemp -d)"
+  base="https://releases.hashicorp.com/terraform/${TF_VERSION}"
+  zip="terraform_${TF_VERSION}_linux_${arch}.zip"
+  curl -fsSL --retry 3 -o "$tmp/$zip" "$base/$zip"
+  curl -fsSL --retry 3 -o "$tmp/SHA256SUMS" "$base/terraform_${TF_VERSION}_SHA256SUMS"
+  (cd "$tmp" && grep " ${zip}\$" SHA256SUMS | sha256sum -c -)
+  unzip -o -q "$tmp/$zip" terraform -d "$tmp"
+  $SUDO install -m 0755 "$tmp/terraform" /usr/local/bin/terraform
+  rm -rf "$tmp"
+fi
+terraform version
+
+# --- Prefetch providers (no backend, no plan/apply) ---
+# Only the roots with a committed .terraform.lock.hcl need providers; -lockfile=readonly
+# keeps init from rewriting them. The other modules validate without provider plugins.
+export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+mkdir -p "$TF_PLUGIN_CACHE_DIR"
+for d in terraform/modules/training_execution terraform/modules/training_node \
+  terraform/envs/aws-training terraform/envs/oracle-dev infra/terraform/environments/vultr-dev; do
+  terraform -chdir="$d" init -backend=false -input=false -lockfile=readonly
+done
+
+echo "Amp orb setup for Dioscuri-Cloud finished."

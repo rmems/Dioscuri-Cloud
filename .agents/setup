@@ -6,7 +6,7 @@
 # be safe to run more than once. See https://ampcode.com/docs/orbs/customizing
 #
 # Installs only what this repo's CI and manifests need:
-#   - apt: curl, ca-certificates
+#   - apt: curl, ca-certificates, unzip
 #   - Terraform 1.10.5 (official zip, sha256-verified, /usr/local/bin)
 #   - terraform init -backend=false -lockfile=readonly for the 5 roots with committed lock files
 #
@@ -34,8 +34,8 @@ apt_install() {
   fi
 }
 
-# --- System packages (curl + CA certs for the installers below) ---
-apt_install curl ca-certificates
+# --- System packages (curl + CA certs for the downloads; unzip for the Terraform zip) ---
+apt_install curl ca-certificates unzip
 
 # --- Terraform 1.10.5 (terraform-validate.yml: hashicorp/setup-terraform terraform_version 1.10.5) ---
 TF_VERSION="1.10.5"

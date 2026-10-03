@@ -27,9 +27,18 @@ out of this repo, and keep cloud-infra trees out of Agoge.
 
 - Terraform **1.10.5** (`hashicorp/setup-terraform` in `terraform-validate.yml`; `TF_VERSION` in `.gitlab-ci.yml`).
 - No cloud credentials are needed to validate (`init -backend=false`).
-- No GPU needed locally. `scripts/training-bootstrap.sh` builds the CUDA training image and runs
-  its `--help` and python3/torch smokes with `docker run`; those smokes don't need a GPU
-  (`training/docker/README.md`).
+- Training-image changes require a local build and both no-GPU container smokes run by
+  `scripts/training-bootstrap.sh`:
+
+  ```bash
+  docker build -t dioscuri-cloud-training:local training/docker
+  docker run --rm dioscuri-cloud-training:local --help
+  docker run --rm dioscuri-cloud-training:local \
+    python3 -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+  ```
+
+  A GPU-backed run is optional and separate; the required smokes above execute the image without
+  a GPU. `training/docker/README.md` documents the image and its separate GPU-backed commands.
 
 ## Commands (from `.github/workflows/terraform-validate.yml`)
 
@@ -37,14 +46,36 @@ out of this repo, and keep cloud-infra trees out of Agoge.
 terraform fmt -check -recursive terraform
 terraform fmt -check -recursive infra/terraform
 
-# For each module in terraform/modules/* and infra/terraform/modules/*,
-# and each environment (terraform/envs/*, infra/terraform/environments/*):
+# For each module in terraform/modules/*:
 terraform -chdir=<dir> init -backend=false
 terraform -chdir=<dir> validate
-terraform -chdir=<dir> test   # modules with a tests/ dir, plus terraform/envs/oracle-dev and aws-training
+terraform -chdir=<dir> test   # only when the module has a tests/ directory
+
+# For each module in infra/terraform/modules/* (no test step):
+terraform -chdir=<dir> init -backend=false
+terraform -chdir=<dir> validate
+
+# Environments validated by this workflow:
+terraform -chdir=infra/terraform/environments/dev init -backend=false
+terraform -chdir=infra/terraform/environments/dev validate
+terraform -chdir=infra/terraform/environments/vultr-dev init -backend=false
+terraform -chdir=infra/terraform/environments/vultr-dev validate
+terraform -chdir=terraform/envs/oracle-dev init -backend=false
+terraform -chdir=terraform/envs/oracle-dev validate
+terraform -chdir=terraform/envs/oracle-dev test
+terraform -chdir=terraform/envs/ibm-dev init -backend=false
+terraform -chdir=terraform/envs/ibm-dev validate
+terraform -chdir=terraform/envs/aws-training init -backend=false
+terraform -chdir=terraform/envs/aws-training validate
+terraform -chdir=terraform/envs/aws-training test
 ```
 
-GitHub Actions is the primary merge gate. `.gitlab-ci.yml` mirrors fmt/validate as secondary CI.
+The workflow formats `terraform/envs/gcp-artifacts` through the recursive fmt check but does not
+initialize, validate, or test it.
+
+GitHub Actions is the primary merge gate. `.gitlab-ci.yml` is a partial secondary mirror: it runs
+the same formatting checks and validates the modules plus `dev`, `vultr-dev`, `oracle-dev`, and
+`ibm-dev`, but omits `aws-training` and all Terraform tests.
 `azure-oidc-preflight.yml` is a manual-dispatch Azure OIDC check that needs
 `AZURE_CLIENT_ID`/`AZURE_TENANT_ID`/`AZURE_SUBSCRIPTION_ID`. It isn't part of build/test.
 
@@ -57,5 +88,6 @@ GitHub Actions is the primary merge gate. `.gitlab-ci.yml` mirrors fmt/validate 
 - Don't commit state, `*.tfvars`, `.terraform/` or `.terraformrc` (all gitignored). Do commit
   `.terraform.lock.hcl` where one already exists.
 - Run `terraform fmt` before committing. CI fails on unformatted HCL.
-- Commit subjects follow Conventional Commits with scopes (`feat(training):`, `docs(aws):`,
-  `fix(oracle-dev):`) and issue/PR numbers.
+- Commit subjects generally follow Conventional Commits. Use a scope when it adds context, and
+  include an issue or PR number when the work is tracked by one; do not invent a reference for
+  untracked work.

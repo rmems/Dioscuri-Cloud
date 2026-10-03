@@ -6,8 +6,8 @@
 # be safe to run more than once. See https://ampcode.com/docs/orbs/customizing
 #
 # Installs only what this repo's CI and manifests need:
-#   - apt: curl, ca-certificates, unzip
-#   - Terraform 1.10.5 (official zip, sha256-verified, /usr/local/bin)
+#   - apt: curl, ca-certificates, gnupg, unzip
+#   - Terraform 1.10.5 (official zip, GPG and sha256-verified, /usr/local/bin)
 #   - terraform init -backend=false -lockfile=readonly for the 5 roots with committed lock files
 #
 # It ends with a dependency fetch/prebuild, not a test run.
@@ -34,22 +34,35 @@ apt_install() {
   fi
 }
 
-# --- System packages (curl + CA certs for the downloads; unzip for the Terraform zip) ---
-apt_install curl ca-certificates unzip
+# --- System packages (secure downloads, signature verification, and zip extraction) ---
+apt_install curl ca-certificates gnupg unzip
 
 # --- Terraform 1.10.5 (terraform-validate.yml: hashicorp/setup-terraform terraform_version 1.10.5) ---
 TF_VERSION="1.10.5"
 if ! terraform version 2>/dev/null | head -n1 | grep -qx "Terraform v${TF_VERSION}"; then
   arch="$(dpkg --print-architecture)"
+  umask 077
   tmp="$(mktemp -d)"
+  chmod 700 "$tmp"
+  trap 'rm -rf -- "$tmp"' EXIT
   base="https://releases.hashicorp.com/terraform/${TF_VERSION}"
   zip="terraform_${TF_VERSION}_linux_${arch}.zip"
+  sums="terraform_${TF_VERSION}_SHA256SUMS"
+  fingerprint="C874011F0AB405110D02105534365D9472D7468F"
   curl -fsSL --retry 3 -o "$tmp/$zip" "$base/$zip"
-  curl -fsSL --retry 3 -o "$tmp/SHA256SUMS" "$base/terraform_${TF_VERSION}_SHA256SUMS"
-  (cd "$tmp" && grep " ${zip}\$" SHA256SUMS | sha256sum -c -)
+  curl -fsSL --retry 3 -o "$tmp/$sums" "$base/$sums"
+  curl -fsSL --retry 3 -o "$tmp/$sums.sig" "$base/$sums.sig"
+  curl -fsSL --retry 3 -o "$tmp/hashicorp.asc" "https://keybase.io/hashicorp/pgp_keys.asc"
+  mkdir -m 700 "$tmp/gnupg"
+  gpg --batch --homedir "$tmp/gnupg" --import "$tmp/hashicorp.asc"
+  gpg --batch --homedir "$tmp/gnupg" --status-fd 1 \
+    --verify "$tmp/$sums.sig" "$tmp/$sums" 2>/dev/null \
+    | grep -Eq "^\[GNUPG:\] VALIDSIG .* ${fingerprint}$"
+  (cd "$tmp" && grep " ${zip}\$" "$sums" | sha256sum -c -)
   unzip -o -q "$tmp/$zip" terraform -d "$tmp"
   $SUDO install -m 0755 "$tmp/terraform" /usr/local/bin/terraform
-  rm -rf "$tmp"
+  rm -rf -- "$tmp"
+  trap - EXIT
 fi
 terraform version
 

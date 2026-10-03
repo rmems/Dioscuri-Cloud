@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
-# Draft CodeRabbit config for rmems/Dioscuri-Cloud (generated locally, not pushed).
+# CodeRabbit config for rmems/Dioscuri-Cloud.
 language: en-US
 reviews:
   profile: chill
@@ -13,9 +13,9 @@ reviews:
   - '!**/*.tfvars'
   path_instructions:
   - path: '**/*.tf'
-    instructions: 'Terraform, CI pins Terraform 1.10.5: do not use language features newer than 1.10. Must pass `terraform fmt -check -recursive terraform infra/terraform` and `terraform init -backend=false && terraform validate` per environment. Pin provider versions in `required_providers`, give variables types, descriptions and `validation` blocks, mark secrets `sensitive = true`, and never hard-code credentials, account IDs or real CIDRs. Flag anything that would create billable resources without an explicit opt-in variable.'
+    instructions: 'Terraform, CI pins Terraform 1.10.5: do not use language features newer than 1.10. Must pass `terraform fmt -check -recursive terraform` and `terraform fmt -check -recursive infra/terraform`, plus `terraform init -backend=false && terraform validate` per environment. Pin provider versions in `required_providers`, give variables types, descriptions and `validation` blocks, mark secrets `sensitive = true`, and never hard-code credentials, account IDs or real CIDRs. Flag anything that would create billable resources without an explicit opt-in variable.'
   - path: '**/*.tftest.hcl'
-    instructions: '`terraform test` suites (oracle-dev, aws-training, training_* modules). New validation rules on variables should come with a matching test case; tests must run with `-backend=false` and no cloud credentials.'
+    instructions: '`terraform test` suites (oracle-dev, aws-training, training_* modules). New validation rules on variables should come with a matching test case; run `terraform init -backend=false` before `terraform test`, and run tests with no cloud credentials.'
   - path: '**/.terraform.lock.hcl'
     instructions: Provider lock file. Don't review hashes line by line; flag provider version bumps that are not mentioned in the PR or not matched by `required_providers`.
   - path: '**/*.tfvars.example'

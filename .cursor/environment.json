@@ -1,0 +1,4 @@
+{
+  "name": "Dioscuri-Cloud",
+  "install": "bash .cursor/install.sh"
+}

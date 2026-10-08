@@ -21,7 +21,10 @@ override.tf.json
 terraform.rc
 
 # IDE / agent tool scratch dirs (never commit local tool state)
-.cursor/
+.cursor/*
+# Cursor Cloud Agent environment: committed on purpose.
+!.cursor/environment.json
+!.cursor/install.sh
 .kilo/
 .kiro/
 node_modules/

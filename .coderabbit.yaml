@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit config for rmems/Dioscuri-Cloud.
+language: en-US
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  fail_commit_status: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+  - '!**/.terraform/**'
+  - '!**/*.tfvars'
+  path_instructions:
+  - path: '**/*.tf'
+    instructions: 'Terraform, CI pins Terraform 1.10.5: do not use language features newer than 1.10. Must pass `terraform fmt -check -recursive terraform` and `terraform fmt -check -recursive infra/terraform`, plus `terraform init -backend=false && terraform validate` per environment. Pin provider versions in `required_providers`, give variables types, descriptions and `validation` blocks, mark secrets `sensitive = true`, and never hard-code credentials, account IDs or real CIDRs. Flag anything that would create billable resources without an explicit opt-in variable.'
+  - path: '**/*.tftest.hcl'
+    instructions: '`terraform test` suites (oracle-dev, aws-training, training_* modules). New validation rules on variables should come with a matching test case; run `terraform init -backend=false` before `terraform test`, and run tests with no cloud credentials.'
+  - path: '**/.terraform.lock.hcl'
+    instructions: Provider lock file. Don't review hashes line by line; flag provider version bumps that are not mentioned in the PR or not matched by `required_providers`.
+  - path: '**/*.tfvars.example'
+    instructions: 'Example values only: no real secrets, tokens, account IDs or personal IP ranges.'
+  - path: '**/*.sh'
+    instructions: Shell scripts. Must pass shellcheck; quote expansions and never echo secrets or tokens.
+  - path: training/docker/Dockerfile
+    instructions: Dockerfile. Keep secrets out of layers and build args, and keep toolchain versions in line with the CI pins.
+  - path: .github/workflows/**
+    instructions: 'GitHub Actions workflows. Keep `permissions:` least-privilege and job commands in sync with the local gates documented in the repo. Most `uses:` are pinned to full commit SHAs; prefer SHA pins for new or bumped actions. `azure-oidc-preflight` uses OIDC (AZURE_CLIENT_ID/TENANT_ID/SUBSCRIPTION_ID): keep `id-token: write` scoped to that job only and never add long-lived cloud keys.'
+  - path: .gitlab-ci.yml
+    instructions: Mirror pipeline for GitLab; covered by `tests/ci/test_gitlab_ci.py`. Keep it in step with the GitHub terraform-validate workflow.
+  tools:
+    tflint:
+      enabled: true
+    checkov:
+      enabled: true
+    shellcheck:
+      enabled: true
+    hadolint:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    markdownlint:
+      enabled: true

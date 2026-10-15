@@ -3,8 +3,10 @@
 #
 # Cursor runs this from the repository root during every Build, on its default
 # Ubuntu base image (CPU only: cloud agents have no GPU), then snapshots the disk.
-# It must be idempotent. Shell exports don't survive into agent runs, so the tools
-# it installs are exposed through /etc/profile.d and /usr/local/bin.
+# It must be idempotent. Terraform is installed into /usr/local/bin, which is
+# already on PATH for later login shells. Provider directories are written into
+# the workspace and kept by the disk snapshot. Exports from this process do not
+# survive, and no /etc/profile.d drop-in is required.
 # See https://cursor.com/docs/cloud-agent/setup
 #
 # Installs only what this repo's CI and manifests need:

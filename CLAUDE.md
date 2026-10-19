@@ -14,15 +14,16 @@ CI pins Terraform 1.10.5 (`terraform-validate.yml`); I ran the same 1.10.5 relea
 | `terraform fmt -check -recursive terraform` and `... infra/terraform` | verified (Terraform 1.10.5) |
 | `terraform init -backend=false` + `validate` on `terraform/modules/artifact_bucket`, `terraform/modules/service_account`, `infra/terraform/modules/onboarding_baseline` | verified (on throwaway copies; these need no providers) |
 | `python3 tests/ci/test_gitlab_ci.py` | verified (22 tests, Python 3.13 with PyYAML; pytest is not installed here) |
-| `validate` / `test` on `training_execution`, `training_node`, `envs/aws-training`, `envs/oracle-dev`, `vultr-dev` | not run (`init` downloads providers; CI does it with `-backend=false`) |
+| `validate` on `training_execution`, `training_node`, `envs/aws-training`, `envs/oracle-dev`, `infra/terraform/environments/vultr-dev`; `terraform test` on `training_execution`, `training_node`, `envs/aws-training`, `envs/oracle-dev` | not run (`init` downloads providers; CI does it with `-backend=false`) |
 | `validate` on `envs/ibm-dev`, `envs/gcp-artifacts`, `infra/terraform/environments/dev` | not run (same reason; CI runs most of them) |
 | `terraform plan` / `apply` / `destroy`, any HCP or cloud CLI | not run (needs cloud credentials; never run these from an agent session) |
 | `scripts/training-bootstrap.sh`, `scripts/hcp/bootstrap-workspaces.sh` | not run (need AWS and HCP credentials; the AWS GPU check dispatches `ssm:SendCommand`) |
 | `.github/workflows/azure-oidc-preflight.yml` | not run (manual `workflow_dispatch`, needs Azure OIDC secrets) |
 | `docker build training/docker` | not run (Docker and a GPU host not available here) |
 
-CI: `terraform-validate.yml` runs fmt, then validate (and `terraform test` where a `tests/` dir exists) with
-`-backend=false`. `.gitlab-ci.yml` is a secondary mirror plus a Duo review job. Run `terraform fmt -recursive` on
+CI: `terraform-validate.yml` runs fmt, then validate with `-backend=false`. It runs `terraform test` only on
+`terraform/modules/*` that have a `tests/` dir (today `training_execution` and `training_node`) and on `envs/oracle-dev` and
+`envs/aws-training`; `vultr-dev`, `ibm-dev` and the `infra/terraform` modules are validated but not tested. `.gitlab-ci.yml` is a secondary mirror plus a Duo review job. Run `terraform fmt -recursive` on
 the dirs you touched before committing; CI fails on fmt.
 
 ## Architecture map

@@ -38,7 +38,7 @@ the dirs you touched before committing; CI fails on fmt.
 
 - Cloud operations only. Training code, eval, checkpoints, and HF release tooling belong to `rmems/agoge-forger`; no cloud-infra trees go there.
 - Custom CUDA and GPU kernel work belongs to `rmems/blackwell-kernel-lab`, not here.
-- No secrets, API keys, DSNs, local checkpoint paths, model weights, `*.tfvars`, `*.tfstate`, or `.terraform/` (all gitignored). Use env vars or HCP sensitive variables; runbooks stay public-safe.
+- Never commit secrets, API keys, DSNs, local checkpoint paths, or model weights; `.gitignore` does not cover them, so check `git status` yourself. Only `*.tfvars`, `*.tfstate` and `.terraform/` are gitignored. Use env vars or HCP sensitive variables; runbooks stay public-safe.
 - No long-running GPU job without a cost estimate, a GitHub issue, and a teardown plan. New billable resources need a `cost-ledger.md` row.
 - Every billable run records the fields in `docs/schemas/experiment-manifest.md`. Do not invent readiness numbers or costs.
 - `azure-oidc-preflight.yml` stays manual-only and read-only: no push/PR triggers, no resource-creating steps.

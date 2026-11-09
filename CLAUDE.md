@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-Claude-specific notes only. There is no `AGENTS.md` in this repo; goals, provider strategy, run discipline, and the
-Agoge boundary are in `README.md`, `docs/repository-structure.md`, and `docs/training-setup.md`, so they are not
-repeated here. This is planned cloud infrastructure: mostly docs, runbooks, and Terraform scaffolds.
+Claude-specific notes only. Shared agent guidance (layout, CI commands, conventions) is in `AGENTS.md`; goals,
+provider strategy, run discipline, and the Agoge boundary are in `README.md`, `docs/repository-structure.md`, and
+`docs/training-setup.md`, so they are not repeated here. This is planned cloud infrastructure: mostly docs, runbooks, and Terraform scaffolds.
 
 ## Commands
 

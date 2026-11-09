@@ -8,7 +8,10 @@ Dioscuri-Cloud is the cloud operations layer for AI model training on student/fr
 (see `README.md`): object storage, CUDA training images, GPU nodes, managed training jobs
 (SageMaker / Azure ML), cost tracking, and an HCP Terraform control plane. The training
 implementation lives in `rmems/agoge-forger`; this repo only orchestrates it. Keep train/eval code
-out of this repo, and keep cloud-infra trees out of Agoge.
+out of this repo, and keep cloud-infra trees out of Agoge. Custom CUDA and GPU kernel work belongs
+to `rmems/blackwell-kernel-lab`, not here.
+
+This file is the shared guidance for all agents. `CLAUDE.md` holds only Claude-specific notes.
 
 ## Layout
 
@@ -79,14 +82,25 @@ the same formatting checks and validates the modules plus `dev`, `vultr-dev`, `o
 `azure-oidc-preflight.yml` is a manual-dispatch Azure OIDC check that needs
 `AZURE_CLIENT_ID`/`AZURE_TENANT_ID`/`AZURE_SUBSCRIPTION_ID`. It isn't part of build/test.
 
+`tests/ci/test_gitlab_ci.py` checks `.gitlab-ci.yml` (including the Duo review job). No CI
+workflow runs it, so run it yourself whenever you change `.gitlab-ci.yml` (needs PyYAML):
+
+```bash
+python3 tests/ci/test_gitlab_ci.py
+```
+
 ## Conventions visible in the repo
 
 - CI only runs `fmt`, `init -backend=false`, `validate` and `test`. Nothing in CI plans or applies.
   Real runs spend cloud credits, which are tracked in `cost-ledger.md`.
+- Never run `terraform plan`/`apply`/`destroy`, HCP or cloud CLIs with credentials, or any publish
+  command from an agent session. Always pass `-backend=false` to `terraform init` for local checks.
 - README non-goals: no secrets, API keys, DSNs, local checkpoint paths or model weights committed,
   and no long-running GPU jobs without a cost estimate, GitHub issue and teardown plan.
 - Don't commit state, `*.tfvars`, `.terraform/` or `.terraformrc` (all gitignored). Do commit
   `.terraform.lock.hcl` where one already exists.
+- `.claude/` is not gitignored (`.cursor/*`, `.kilo/` and `.kiro/` are), so don't commit local
+  agent state there.
 - Run `terraform fmt` before committing. CI fails on unformatted HCL.
 - Commit subjects generally follow Conventional Commits. Use a scope when it adds context, and
   include an issue or PR number when the work is tracked by one; do not invent a reference for

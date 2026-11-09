@@ -93,8 +93,9 @@ python3 tests/ci/test_gitlab_ci.py
 
 - CI only runs `fmt`, `init -backend=false`, `validate` and `test`. Nothing in CI plans or applies.
   Real runs spend cloud credits, which are tracked in `cost-ledger.md`.
-- Never run `terraform plan`/`apply`/`destroy`, HCP or cloud CLIs with credentials, or any publish
-  command from an agent session. Always pass `-backend=false` to `terraform init` for local checks.
+- Agent sessions stick to validation-only Terraform (`init -backend=false`, `validate`, `test`) and
+  skip `plan`/`apply`/`destroy`, credential-backed HCP or cloud CLIs, and publish commands (see
+  `CLAUDE.md` Gotchas).
 - README non-goals: no secrets, API keys, DSNs, local checkpoint paths or model weights committed,
   and no long-running GPU jobs without a cost estimate, GitHub issue and teardown plan.
 - Don't commit state, `*.tfvars`, `.terraform/` or `.terraformrc` (all gitignored). Do commit

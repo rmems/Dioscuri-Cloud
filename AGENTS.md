@@ -11,7 +11,9 @@ implementation lives in `rmems/agoge-forger`; this repo only orchestrates it. Ke
 out of this repo, and keep cloud-infra trees out of Agoge. Custom CUDA and GPU kernel work belongs
 to `rmems/blackwell-kernel-lab`, not here.
 
-This file is the shared guidance for all agents. `CLAUDE.md` holds only Claude-specific notes.
+This file is the shared guidance for all agents. `CLAUDE.md` keeps Claude-session verification notes
+(what ran locally on a given machine); it repeats a few safety rules for convenience. Prefer this
+file when the two differ.
 
 ## Layout
 
@@ -30,8 +32,8 @@ This file is the shared guidance for all agents. `CLAUDE.md` holds only Claude-s
 
 - Terraform **1.10.5** (`hashicorp/setup-terraform` in `terraform-validate.yml`; `TF_VERSION` in `.gitlab-ci.yml`).
 - No cloud credentials are needed to validate (`init -backend=false`).
-- Training-image changes require a local build and both no-GPU container smokes run by
-  `scripts/training-bootstrap.sh`:
+- For training-image-only changes, run a local build and both no-GPU container smokes directly
+  (no HCP/AWS credentials required):
 
   ```bash
   docker build -t dioscuri-cloud-training:local training/docker
@@ -40,8 +42,10 @@ This file is the shared guidance for all agents. `CLAUDE.md` holds only Claude-s
     python3 -c "import torch; print(torch.__version__, torch.cuda.is_available())"
   ```
 
-  A GPU-backed run is optional and separate; the required smokes above execute the image without
-  a GPU. `training/docker/README.md` documents the image and its separate GPU-backed commands.
+  A GPU-backed run is optional and separate; the smokes above execute the image without a GPU.
+  `training/docker/README.md` documents GPU-backed commands. `scripts/training-bootstrap.sh`
+  performs the same Docker smokes only after HCP/AWS/S3 operator preflight (and may dispatch SSM
+  when configured); use it for full bootstrap, not as the minimal image-only check.
 
 ## Commands (from `.github/workflows/terraform-validate.yml`)
 
@@ -91,8 +95,12 @@ python3 tests/ci/test_gitlab_ci.py
 
 ## Conventions visible in the repo
 
-- CI only runs `fmt`, `init -backend=false`, `validate` and `test`. Nothing in CI plans or applies.
-  Real runs spend cloud credits, which are tracked in `cost-ledger.md`.
+- GitHub `terraform-validate.yml` and GitLab's `validate` stage run Terraform `fmt`,
+  `init -backend=false`, `validate`, and (on GitHub only, for selected roots) `terraform test`.
+  They do not run standalone `plan`, `apply`, or `destroy` against real backends; test fixtures may
+  still invoke mocked `plan`/`apply` inside `terraform test` run blocks. GitLab also exposes a
+  manual `gitlab-duo-review` job (see `.gitlab-ci.yml`). Billable cloud work is tracked in
+  `cost-ledger.md`.
 - Agent sessions stick to validation-only Terraform (`init -backend=false`, `validate`, `test`) and
   skip `plan`/`apply`/`destroy`, credential-backed HCP or cloud CLIs, and publish commands (see
   `CLAUDE.md` Gotchas).

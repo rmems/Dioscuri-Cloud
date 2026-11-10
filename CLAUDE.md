@@ -6,7 +6,11 @@ provider strategy, run discipline, and the Agoge boundary are in `README.md`, `d
 
 ## Commands
 
-Run from the repo root. "Verified" means it ran successfully here (Linux, no cloud credentials, no backend).
+Canonical shared commands and conventions are in `AGENTS.md`. The table below records what was
+verified in a Claude Code session on one Linux host (no cloud credentials, no backend) and may lag
+CI.
+
+Run from the repo root. "Verified" means it ran successfully here.
 CI pins Terraform 1.10.5 (`terraform-validate.yml`); I ran the same 1.10.5 release.
 
 | Command | Status |
@@ -23,7 +27,7 @@ CI pins Terraform 1.10.5 (`terraform-validate.yml`); I ran the same 1.10.5 relea
 
 CI: `terraform-validate.yml` runs fmt, then validate with `-backend=false`. It runs `terraform test` only on
 `terraform/modules/*` that have a `tests/` dir (today `training_execution` and `training_node`) and on `envs/oracle-dev` and
-`envs/aws-training`; `vultr-dev`, `ibm-dev` and the `infra/terraform` modules are validated but not tested. `.gitlab-ci.yml` is a secondary mirror plus a Duo review job. Run `terraform fmt -recursive` on
+`envs/aws-training`; `vultr-dev`, `ibm-dev` and the `infra/terraform` modules are validated but not tested. `.gitlab-ci.yml` is a partial secondary mirror (see `AGENTS.md`) plus a Duo review job. Run `terraform fmt -recursive` on
 the dirs you touched before committing; CI fails on fmt.
 
 ## Architecture map
